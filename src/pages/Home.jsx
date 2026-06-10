@@ -66,7 +66,7 @@ export default function Home() {
         <Link to="/shop?category=Men" className="group block cursor-pointer">
           <div className="w-full aspect-[3/4] overflow-hidden bg-[#111]">
             <img 
-              src="/images/Gemini_Generated_Image_qepdsvqepdsvqepd-clean.png" 
+              src="images/file_00000000bf1071fab1b130d10ce4bf49.png" 
               alt="Men" 
               className="w-full h-full object-cover" 
               loading="lazy" 
@@ -88,7 +88,7 @@ export default function Home() {
         <div className="hidden md:flex flex-col h-full w-full justify-center min-h-0">
           <div className="flex h-1/2 justify-center items-center w-full min-h-0">
             {[
-              "/images/1000144708.png",
+              "images/Gemini_Generated_Image_mbal2rmbal2rmbal (1)-clean.png",
               "/images/1000144719.png",
               "/images/1000144720.png",
             ].map((src, index) => (
@@ -99,9 +99,9 @@ export default function Home() {
           </div>
           <div className="flex h-1/2 justify-center items-center w-full min-h-0">
             {[
-              "/images/1000150020.png",
-              "/images/1000150765.png",
-              "/images/1000150766.png",
+              "images/Gemini_Generated_Image_jtr8kcjtr8kcjtr8-clean.png",
+              "images/Gemini_Generated_Image_n0b4ygn0b4ygn0b4-clean.png",
+              "images/Gemini_Generated_Image_38zhne38zhne38zh-clean.png",
             ].map((src, index) => (
               <Link key={index} to="/shop" className="h-full w-auto block cursor-pointer shrink-0">
                 <img src={src} alt={`Product ${index + 4}`} className="h-full w-auto object-contain" loading="lazy" />
