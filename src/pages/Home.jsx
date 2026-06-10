@@ -82,34 +82,59 @@ export default function Home() {
         </Link>
       </section>
 
-      {/* 3. Featured Products */}
-      <motion.section 
-        initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.1 }}
-        className="mx-auto max-w-[1600px] px-4 sm:px-6 md:px-12" data-testid="featured-section"
-      >
-        <motion.div variants={fadeUp} className="mb-10 flex flex-col items-center justify-center gap-4">
-          <h2 className="text-2xl font-medium tracking-widest uppercase text-white">New Arrivals</h2>
-        </motion.div>
-        <motion.div variants={staggerContainer} className="grid grid-cols-2 gap-x-4 gap-y-12 md:grid-cols-4">
-          {isLoading ? (
-            Array.from({ length: 4 }).map((_, i) => (
-              <div key={i} className="aspect-[3/4] w-full animate-pulse bg-[#111]" />
-            ))
-          ) : (
-            featured.map((product) => (
-              <motion.div variants={fadeUp} key={product.slug}>
-                <ProductCard product={product} />
-              </motion.div>
-            ))
-          )}
-        </motion.div>
-        
-        <div className="mt-12 flex justify-center">
-           <Link to="/shop" className="text-sm font-medium tracking-widest uppercase border-b border-white pb-1 text-white hover:text-white/60 hover:border-white/60 transition-colors">
-              View All Products
-           </Link>
+      {/* 3. Full-Screen Gapless Flex */}
+      <section className="w-full h-[100vh] flex flex-col bg-black overflow-hidden pt-[80px] pb-4">
+        {/* Desktop: 2 Rows of 3 */}
+        <div className="hidden md:flex flex-col h-full w-full justify-center min-h-0">
+          <div className="flex h-1/2 justify-center items-center w-full min-h-0">
+            {[
+              "/images/1000144708.png",
+              "/images/1000144719.png",
+              "/images/1000144720.png",
+            ].map((src, index) => (
+              <Link key={index} to="/shop" className="h-full w-auto block cursor-pointer shrink-0">
+                <img src={src} alt={`Product ${index + 1}`} className="h-full w-auto object-contain" loading="lazy" />
+              </Link>
+            ))}
+          </div>
+          <div className="flex h-1/2 justify-center items-center w-full min-h-0">
+            {[
+              "/images/1000150020.png",
+              "/images/1000150765.png",
+              "/images/1000150766.png",
+            ].map((src, index) => (
+              <Link key={index} to="/shop" className="h-full w-auto block cursor-pointer shrink-0">
+                <img src={src} alt={`Product ${index + 4}`} className="h-full w-auto object-contain" loading="lazy" />
+              </Link>
+            ))}
+          </div>
         </div>
-      </motion.section>
+
+        {/* Mobile: 3 Rows of 2 */}
+        <div className="flex md:hidden flex-col h-full w-full justify-center min-h-0">
+          <div className="flex h-1/3 justify-center items-center w-full min-h-0">
+            {["/images/1000144708.png", "/images/1000144719.png"].map((src, index) => (
+              <Link key={index} to="/shop" className="h-full w-auto block cursor-pointer shrink-0">
+                <img src={src} alt={`Product`} className="h-full w-auto object-contain" loading="lazy" />
+              </Link>
+            ))}
+          </div>
+          <div className="flex h-1/3 justify-center items-center w-full min-h-0">
+            {["/images/1000144720.png", "/images/1000150020.png"].map((src, index) => (
+              <Link key={index} to="/shop" className="h-full w-auto block cursor-pointer shrink-0">
+                <img src={src} alt={`Product`} className="h-full w-auto object-contain" loading="lazy" />
+              </Link>
+            ))}
+          </div>
+          <div className="flex h-1/3 justify-center items-center w-full min-h-0">
+            {["/images/1000150765.png", "/images/1000150766.png"].map((src, index) => (
+              <Link key={index} to="/shop" className="h-full w-auto block cursor-pointer shrink-0">
+                <img src={src} alt={`Product`} className="h-full w-auto object-contain" loading="lazy" />
+              </Link>
+            ))}
+          </div>
+        </div>
+      </section>
     </div>
   );
 }
