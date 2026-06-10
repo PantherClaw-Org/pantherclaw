@@ -28,7 +28,7 @@ export default function Home() {
         <Link to="/shop" className="group block cursor-pointer">
           <div className="w-full h-[75vh] md:h-[100vh] overflow-hidden bg-[#111]">
             <img 
-              src="/images/image.png" 
+              src="/images/Gemini_Generated_Image_motm6wmotm6wmotm-clean.png" 
               alt="Spring Drop" 
               className="w-full h-full object-cover object-[center_30%]" 
               fetchpriority="high" 
