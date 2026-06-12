@@ -84,9 +84,9 @@ export default function Navbar() {
           </button>
           
           {user ? (
-            <button onClick={signOut} aria-label="Sign Out" className="hidden sm:block hover:opacity-50 text-white">
-              <User size={19} strokeWidth={1.6} aria-hidden="true" className="text-blue-500" />
-            </button>
+            <Link to="/account" aria-label="Account" className="hidden sm:block hover:opacity-50 text-white">
+              <User size={19} strokeWidth={1.6} aria-hidden="true" />
+            </Link>
           ) : (
             <button onClick={() => setAuthModalOpen(true)} aria-label="Sign In" className="hidden sm:block text-white">
               <User size={19} strokeWidth={1.6} aria-hidden="true" />
@@ -114,7 +114,7 @@ export default function Navbar() {
 
       {/* Mobile menu */}
       {menu && (
-        <div className="border-t border-white/10 bg-black px-6 py-6 md:hidden">
+        <div className="border-t border-white/10 bg-black px-6 py-6 md:hidden text-white">
           {links.map((l) => (
             <Link
               key={l.label}
@@ -125,9 +125,9 @@ export default function Navbar() {
             </Link>
           ))}
           {user ? (
-            <button onClick={signOut} className="block py-3 font-serif text-3xl text-left w-full text-blue-500">
-              Sign Out
-            </button>
+            <Link to="/account" onClick={() => setMenu(false)} className="block py-3 font-serif text-3xl text-left w-full">
+              My Account
+            </Link>
           ) : (
             <button onClick={() => { setAuthModalOpen(true); setMenu(false); }} className="block py-3 font-serif text-3xl text-left w-full">
               Sign In

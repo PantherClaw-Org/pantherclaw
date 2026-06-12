@@ -18,6 +18,7 @@ const ProductDetail = lazy(() => import("./pages/ProductDetail"));
 const Story = lazy(() => import("./pages/Story"));
 const Checkout = lazy(() => import("./pages/Checkout"));
 const CheckoutSuccess = lazy(() => import("./pages/CheckoutSuccess"));
+const Account = lazy(() => import("./pages/Account"));
 // Scroll restoration is natively handled well by React Router 6.4+, or we can add a lightweight hook if needed, but Lenis handles basic scroll reset when properly configured.
 // For smooth scrolling, we now use <ReactLenis root>
 
@@ -51,6 +52,7 @@ export default function App() {
                   <Route path="/story" element={<Story />} />
                   <Route path="/checkout" element={<Checkout />} />
                   <Route path="/checkout/success" element={<CheckoutSuccess />} />
+                  <Route path="/account" element={<Account />} />
                 </Routes>
               </Suspense>
             </main>

@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import { X, Minus, Plus, ShoppingBag } from "lucide-react";
+import { X, Minus, Plus } from "lucide-react";
 import { useCartStore } from "../store/cartStore";
 import { formatPrice } from "../lib/api";
 

@@ -82,57 +82,38 @@ export default function Home() {
         </Link>
       </section>
 
-      {/* 3. Full-Screen Gapless Flex */}
-      <section className="w-full h-[100vh] flex flex-col bg-black overflow-hidden pt-[80px] pb-4">
-        {/* Desktop: 2 Rows of 3 */}
-        <div className="hidden md:flex flex-col h-full w-full justify-center min-h-0">
-          <div className="flex h-1/2 justify-center items-center w-full min-h-0">
-            {[
-              "images/Gemini_Generated_Image_mbal2rmbal2rmbal (1)-clean.png",
-              "/images/1000144719.png",
-              "/images/1000144720.png",
-            ].map((src, index) => (
-              <Link key={index} to="/shop" className="h-full w-auto block cursor-pointer shrink-0">
-                <img src={src} alt={`Product ${index + 1}`} className="h-full w-auto object-contain" loading="lazy" />
-              </Link>
-            ))}
-          </div>
-          <div className="flex h-1/2 justify-center items-center w-full min-h-0">
-            {[
-              "images/Gemini_Generated_Image_jtr8kcjtr8kcjtr8-clean.png",
-              "images/Gemini_Generated_Image_n0b4ygn0b4ygn0b4-clean.png",
-              "images/Gemini_Generated_Image_38zhne38zhne38zh-clean.png",
-            ].map((src, index) => (
-              <Link key={index} to="/shop" className="h-full w-auto block cursor-pointer shrink-0">
-                <img src={src} alt={`Product ${index + 4}`} className="h-full w-auto object-contain" loading="lazy" />
-              </Link>
-            ))}
-          </div>
+      {/* 3. Seamless Canvas Grid */}
+      <section className="w-full bg-[#f9f9f9]">
+        {/* Desktop: Grid of 3 columns */}
+        <div className="hidden md:grid grid-cols-3 w-full">
+          {[
+            "images/Gemini_Generated_Image_mbal2rmbal2rmbal (1)-clean.png",
+            "/images/1000144719.png",
+            "/images/1000144720.png",
+            "images/Gemini_Generated_Image_jtr8kcjtr8kcjtr8-clean.png",
+            "images/Gemini_Generated_Image_n0b4ygn0b4ygn0b4-clean.png",
+            "images/Gemini_Generated_Image_38zhne38zhne38zh-clean.png",
+          ].map((src, index) => (
+            <Link key={index} to="/shop" className="w-full flex justify-center items-center">
+              <img src={src} alt={`Product ${index + 1}`} className="w-full h-auto object-contain" loading="lazy" />
+            </Link>
+          ))}
         </div>
 
-        {/* Mobile: 3 Rows of 2 */}
-        <div className="flex md:hidden flex-col h-full w-full justify-center min-h-0">
-          <div className="flex h-1/3 justify-center items-center w-full min-h-0">
-            {["/images/1000144708.png", "/images/1000144719.png"].map((src, index) => (
-              <Link key={index} to="/shop" className="h-full w-auto block cursor-pointer shrink-0">
-                <img src={src} alt={`Product`} className="h-full w-auto object-contain" loading="lazy" />
-              </Link>
-            ))}
-          </div>
-          <div className="flex h-1/3 justify-center items-center w-full min-h-0">
-            {["/images/1000144720.png", "/images/1000150020.png"].map((src, index) => (
-              <Link key={index} to="/shop" className="h-full w-auto block cursor-pointer shrink-0">
-                <img src={src} alt={`Product`} className="h-full w-auto object-contain" loading="lazy" />
-              </Link>
-            ))}
-          </div>
-          <div className="flex h-1/3 justify-center items-center w-full min-h-0">
-            {["/images/1000150765.png", "/images/1000150766.png"].map((src, index) => (
-              <Link key={index} to="/shop" className="h-full w-auto block cursor-pointer shrink-0">
-                <img src={src} alt={`Product`} className="h-full w-auto object-contain" loading="lazy" />
-              </Link>
-            ))}
-          </div>
+        {/* Mobile: Grid of 2 columns */}
+        <div className="grid md:hidden grid-cols-2 w-full">
+          {[
+            "/images/1000144708.png",
+            "/images/1000144719.png",
+            "/images/1000144720.png",
+            "/images/1000150020.png",
+            "/images/1000150765.png",
+            "/images/1000150766.png",
+          ].map((src, index) => (
+            <Link key={index} to="/shop" className="w-full flex justify-center items-center">
+              <img src={src} alt={`Product`} className="w-full h-auto object-contain" loading="lazy" />
+            </Link>
+          ))}
         </div>
       </section>
     </div>

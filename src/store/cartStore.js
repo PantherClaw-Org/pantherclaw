@@ -78,9 +78,12 @@ export const useCartStore = create(
         const existing = items.find((i) => i.key === key);
         
         let newItems;
+        let newQty = 1;
+        
         if (existing) {
+          newQty = Math.min(20, existing.qty + 1);
           newItems = items.map((i) =>
-            i.key === key ? { ...i, qty: i.qty + 1 } : i
+            i.key === key ? { ...i, qty: newQty } : i
           );
         } else {
           newItems = [
@@ -92,7 +95,7 @@ export const useCartStore = create(
               name: product.name,
               subtitle: product.subtitle,
               price: product.price,
-              image: product.images[0],
+              image: product.images?.[0] || product.product_colors?.[0]?.images?.[0],
               size,
               qty: 1,
             },
@@ -104,9 +107,9 @@ export const useCartStore = create(
         // Background sync to DB if logged in
         if (session_id && variantId) {
           if (existing) {
-            await supabase.from('cart_items').update({ quantity: existing.qty + 1 }).eq('session_id', session_id).eq('variant_id', variantId);
+            await supabase.from('cart_items').update({ quantity: newQty }).eq('session_id', session_id).eq('variant_id', variantId);
           } else {
-            await supabase.from('cart_items').insert([{ session_id, variant_id: variantId, quantity: 1 }]);
+            await supabase.from('cart_items').insert([{ session_id, variant_id: variantId, quantity: 1, price_at_add: product.price }]);
           }
         }
       },
@@ -128,7 +131,7 @@ export const useCartStore = create(
         const item = items.find((i) => i.key === key);
         if (!item) return;
 
-        const newQty = Math.max(1, item.qty + delta);
+        const newQty = Math.max(1, Math.min(20, item.qty + delta));
         const newItems = items.map((i) =>
           i.key === key ? { ...i, qty: newQty } : i
         );

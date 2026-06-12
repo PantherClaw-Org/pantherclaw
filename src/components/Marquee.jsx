@@ -1,4 +1,3 @@
-import React from "react";
 
 const items = [
   "FREE SHIPPING ACROSS INDIA",
