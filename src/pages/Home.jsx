@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useRef, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Helmet } from "react-helmet-async";
@@ -24,6 +24,30 @@ const staggerContainer = {
 
 export default function Home() {
   const { data: allProducts, isLoading } = useProducts();
+  const videoRef = useRef(null);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            // Video is in view, play it!
+            videoRef.current?.play().catch(e => console.log("Autoplay prevented:", e));
+          } else {
+            // Video is out of view, pause it to save bandwidth/battery!
+            videoRef.current?.pause();
+          }
+        });
+      },
+      { threshold: 0.5 } // Trigger when 50% of the video is visible
+    );
+
+    if (videoRef.current) {
+      observer.observe(videoRef.current);
+    }
+
+    return () => observer.disconnect();
+  }, []);
   const featured = allProducts ? allProducts.slice(0, 4) : [];
 
   return (
@@ -190,6 +214,46 @@ export default function Home() {
               />
             </Link>
           ))}
+        </div>
+      </section>
+
+      {/* 4. Lookbook / Extra Images */}
+      <section className="w-full bg-black flex justify-center">
+        <div className="w-full max-w-5xl grid grid-cols-1 md:grid-cols-2 px-4 md:px-8">
+          <Link to="/shop" className="group block cursor-pointer h-full">
+            <div className="w-full h-full min-h-[500px] overflow-hidden bg-black">
+              <img
+                src="https://cdn.pantherclaw.in/1780682352961-kx9boc.png"
+                alt="Lookbook 1"
+                className="w-full h-full object-cover object-top scale-[1.15]"
+                loading="lazy"
+              />
+            </div>
+          </Link>
+          <Link to="/shop" className="group block cursor-pointer h-full">
+            <div className="w-full h-full min-h-[500px] overflow-hidden bg-black">
+              <img
+                src="https://cdn.pantherclaw.in/images/IMG-20260610-WA0038%20(2).jpg"
+                alt="Lookbook 2"
+                className="w-full h-full object-cover object-top"
+                loading="lazy"
+              />
+            </div>
+          </Link>
+        </div>
+      </section>
+
+      {/* 5. Campaign Video */}
+      <section className="w-full bg-black flex justify-center">
+        <div className="w-full">
+          <video
+            ref={videoRef}
+            src="https://cdn.pantherclaw.in/images/VID-20260611-WA0102.mp4"
+            className="w-full h-auto aspect-video object-cover"
+            muted
+            playsInline
+            loop
+          />
         </div>
       </section>
     </div>
