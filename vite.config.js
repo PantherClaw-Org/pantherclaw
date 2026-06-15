@@ -14,15 +14,21 @@ export default defineConfig({
     chunkSizeWarningLimit: 1000,
     rollupOptions: {
       output: {
-        manualChunks: {
-          "react-vendor": ["react", "react-dom", "react-router-dom"],
-          "data-vendor": [
-            "@tanstack/react-query",
-            "@supabase/supabase-js",
-            "zustand",
-          ],
-          "motion-vendor": ["framer-motion", "lenis"],
-          "monitoring-vendor": ["@sentry/react"],
+        manualChunks(id) {
+          if (id.includes("node_modules")) {
+            if (id.includes("react") || id.includes("react-dom") || id.includes("react-router-dom")) {
+              return "react-vendor";
+            }
+            if (id.includes("@tanstack/react-query") || id.includes("@supabase/supabase-js") || id.includes("zustand")) {
+              return "data-vendor";
+            }
+            if (id.includes("framer-motion") || id.includes("lenis")) {
+              return "motion-vendor";
+            }
+            if (id.includes("@sentry/react")) {
+              return "monitoring-vendor";
+            }
+          }
         },
       },
     },
