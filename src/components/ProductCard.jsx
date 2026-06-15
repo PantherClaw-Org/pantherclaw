@@ -30,6 +30,12 @@ export default function ProductCard({ product, index = 0 }) {
   const fit = fitLabel(product);
   const { hasDiscount, mrp, percentOff } = pricing(product);
 
+  const uncroppedImages = [
+    "https://cdn.pantherclaw.in/1780682689003-rky4f.jpeg",
+    "https://cdn.pantherclaw.in/1781090063940-yb5x1g.png"
+  ];
+  const shouldContain = uncroppedImages.includes(primary?.url);
+
   const handleWishlistToggle = async (e) => {
     e.preventDefault(); // Prevent navigating to the product page
     e.stopPropagation();
@@ -67,7 +73,7 @@ export default function ProductCard({ product, index = 0 }) {
           alt={primary?.alt || product.name}
           blurhash={primary?.blurhash}
           sizes="(max-width: 768px) 50vw, 25vw"
-          className="h-full w-full object-cover"
+          className={`h-full w-full ${shouldContain ? "object-contain" : "object-cover"}`}
         />
 
         <div className="absolute left-4 top-4 flex flex-col items-start gap-1.5">

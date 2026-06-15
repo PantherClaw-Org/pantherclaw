@@ -413,50 +413,70 @@ export default function ProductDetail() {
       </Helmet>
 
       {/* Product Top Section */}
-      <div className="flex flex-col md:flex-row gap-10 mb-20">
-        <div className="flex-1">
-          <div
-            className="bg-[#111] aspect-[3/4]"
-            style={{
-              viewTransitionName: `product-${product.slug}${colorSlug ? `-${colorSlug}` : ""}`,
-            }}
-          >
-            <Img
-              src={heroImage?.url || displayImage}
-              alt={heroImage?.alt || product.name}
-              blurhash={heroImage?.blurhash}
-              className="w-full h-full object-cover"
-              sizes="(max-width: 768px) 100vw, 50vw"
-              eager
-            />
-          </div>
-          {shots.length > 1 && (
-            <div className="mt-3 flex gap-3 overflow-x-auto">
-              {shots.map((shot, i) => (
-                <button
-                  key={shot.url + i}
-                  onClick={() => setSelectedShot(i)}
-                  aria-label={`View image ${i + 1}`}
-                  aria-current={i === selectedShot}
-                  className={`relative h-20 w-16 flex-shrink-0 overflow-hidden border transition-colors ${
-                    i === selectedShot
-                      ? "border-smoke"
-                      : "border-white/10 hover:border-ash"
-                  }`}
+      <div className="flex flex-col md:flex-row gap-10 mb-20 md:items-start">
+        {/* Left: Images (Stacked Desktop, Swipe Mobile) */}
+        <div className="w-full md:flex-[1.5] lg:flex-[2]">
+          {/* Mobile: Horizontal Snap Scroll */}
+          <div className="flex md:hidden overflow-x-auto snap-x snap-mandatory gap-2 pb-4 hide-scrollbar">
+            {shots.length > 0 ? (
+              shots.map((shot, i) => (
+                <div
+                  key={`mob-${i}`}
+                  className="w-[90vw] flex-shrink-0 snap-center bg-[#111]"
+                  style={i === 0 ? { viewTransitionName: `product-${product.slug}${colorSlug ? `-${colorSlug}` : ""}` } : {}}
                 >
                   <Img
                     src={shot.url}
-                    alt={shot.alt || `${product.name} view ${i + 1}`}
+                    alt={shot.alt || product.name}
                     blurhash={shot.blurhash}
-                    className="h-full w-full object-cover"
-                    sizes="64px"
+                    className="w-full h-auto"
+                    sizes="100vw"
+                    eager={i === 0}
                   />
-                </button>
-              ))}
-            </div>
-          )}
+                </div>
+              ))
+            ) : (
+              <div className="w-[90vw] flex-shrink-0 snap-center bg-[#111]">
+                <Img src={displayImage} alt={product.name} className="w-full h-auto" sizes="100vw" eager />
+              </div>
+            )}
+          </div>
+
+          {/* Desktop: Vertical Stack */}
+          <div className="hidden md:flex flex-col gap-4">
+            {shots.length > 0 ? (
+              shots.map((shot, i) => (
+                <div
+                  key={`desk-${i}`}
+                  className="w-full bg-[#111]"
+                  style={i === 0 ? { viewTransitionName: `product-${product.slug}${colorSlug ? `-${colorSlug}` : ""}` } : {}}
+                >
+                  <Img
+                    src={shot.url}
+                    alt={shot.alt || product.name}
+                    blurhash={shot.blurhash}
+                    className="w-full h-auto"
+                    sizes="50vw"
+                    eager={i === 0}
+                  />
+                </div>
+              ))
+            ) : (
+              <div className="w-full bg-[#111]">
+                <Img src={displayImage} alt={product.name} className="w-full h-auto" sizes="50vw" eager />
+              </div>
+            )}
+          </div>
         </div>
-        <div className="flex-1">
+
+        {/* Right: Sticky Details */}
+        <div className="w-full md:flex-1 md:sticky md:top-32 h-fit">
+          <div className="mb-6 flex items-center gap-2 text-xs uppercase tracking-widest font-bold text-ash">
+            <Link to="/" className="hover:text-white transition-colors">Home</Link>
+            <span>/</span>
+            <Link to="/shop" className="hover:text-white transition-colors">Shop</Link>
+          </div>
+          
           <div className="flex justify-between items-start mb-2">
             <h1 className="font-serif text-4xl">{product.name}</h1>
             <button
