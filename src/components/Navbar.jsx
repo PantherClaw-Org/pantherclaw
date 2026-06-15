@@ -12,7 +12,6 @@ const links = [
   { label: "Shop All", to: "/shop" },
   { label: "Women", to: "/shop?category=Women" },
   { label: "Men", to: "/shop?category=Men" },
-  { label: "Story", to: "/story" },
   { label: "Track Order", to: "/track-order" },
 ];
 

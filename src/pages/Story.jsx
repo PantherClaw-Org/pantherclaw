@@ -1,45 +1,40 @@
 import React, { useRef } from "react";
 import { Helmet } from "react-helmet-async";
-import { motion, useScroll, useTransform } from "framer-motion";
+import { motion, useScroll, useTransform, useSpring } from "framer-motion";
 import { Link } from "react-router-dom";
 
 export default function Story() {
-  const containerRef = useRef(null);
-
-  // We track the scroll progress of the entire container
-  const { scrollYProgress } = useScroll({
-    target: containerRef,
-    offset: ["start start", "end end"]
+  // Container 1: The Shrinking Hero (150vh so it pins for a bit while scrolling)
+  const heroRef = useRef(null);
+  const { scrollYProgress: heroProgress } = useScroll({
+    target: heroRef,
+    offset: ["start start", "end start"],
   });
-
-  // 1. HERO REVEAL: Fades out and scales up slightly as you scroll down
-  const heroOpacity = useTransform(scrollYProgress, [0, 0.15], [1, 0]);
-  const heroScale = useTransform(scrollYProgress, [0, 0.15], [1, 1.2]);
-  const heroTextY = useTransform(scrollYProgress, [0, 0.15], [0, 100]);
-
-  // 2. MANIFESTO REVEAL: Fades in as hero fades out, then fades out
-  const manifestoOpacity = useTransform(scrollYProgress, [0.15, 0.25, 0.35, 0.45], [0, 1, 1, 0]);
-  const manifestoY = useTransform(scrollYProgress, [0.15, 0.45], [100, -100]);
-
-  // 3. PARALLAX LOOKBOOK: Starts moving up after the manifesto
-  // Image 1: Moves fast
-  const img1Y = useTransform(scrollYProgress, [0.4, 0.8], ["50vh", "-50vh"]);
-  const img1Opacity = useTransform(scrollYProgress, [0.4, 0.5, 0.7, 0.8], [0, 1, 1, 0]);
   
-  // Image 2: Moves slow (creates depth)
-  const img2Y = useTransform(scrollYProgress, [0.45, 0.85], ["70vh", "-30vh"]);
-  const img2Opacity = useTransform(scrollYProgress, [0.45, 0.55, 0.75, 0.85], [0, 1, 1, 0]);
+  // Smooth the progress slightly
+  const smoothHeroProgress = useSpring(heroProgress, { stiffness: 400, damping: 40 });
+  const heroScale = useTransform(smoothHeroProgress, [0, 1], [1, 0.4]);
+  const heroBorderRadius = useTransform(smoothHeroProgress, [0, 1], ["0px", "40px"]);
+  const heroOpacity = useTransform(smoothHeroProgress, [0.8, 1], [1, 0]);
 
-  // Image 3: Moves extremely fast, massive image
-  const img3Y = useTransform(scrollYProgress, [0.5, 0.9], ["100vh", "-80vh"]);
-  const img3Opacity = useTransform(scrollYProgress, [0.5, 0.6, 0.8, 0.9], [0, 1, 1, 0]);
+  // Container 2: Text Reveal (200vh)
+  const textRef = useRef(null);
+  const { scrollYProgress: textProgress } = useScroll({
+    target: textRef,
+    offset: ["start center", "end center"],
+  });
+  const textClipPath = useTransform(textProgress, [0, 1], ["polygon(0% 0%, 0% 0%, 0% 100%, 0% 100%)", "polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%)"]);
 
-  // 4. THE CTA: Fades in at the very end
-  const ctaOpacity = useTransform(scrollYProgress, [0.85, 0.95], [0, 1]);
-  const ctaY = useTransform(scrollYProgress, [0.85, 0.95], [50, 0]);
+  // Container 3: Pinned Horizontal Scroll Gallery (400vh)
+  const galleryRef = useRef(null);
+  const { scrollYProgress: galleryProgress } = useScroll({
+    target: galleryRef,
+    offset: ["start start", "end end"],
+  });
+  const galleryX = useTransform(galleryProgress, [0, 1], ["0%", "-75%"]);
 
   return (
-    <div ref={containerRef} className="relative bg-black w-full" style={{ height: "400vh" }}>
+    <div className="bg-black min-h-screen text-white relative">
       <Helmet>
         <title>Our Story | Pantherclaw</title>
         <meta
@@ -49,98 +44,122 @@ export default function Story() {
         <link rel="canonical" href="https://pantherclaw.in/story" />
       </Helmet>
 
-      {/* --- FIXED VIEWPORT CONTAINER --- */}
-      <div className="sticky top-0 left-0 w-full h-screen overflow-hidden pointer-events-none">
-        
-        {/* 1. HERO SEQUENCE */}
-        <motion.div 
-          className="absolute inset-0 flex flex-col items-center justify-center text-center px-4"
-          style={{ opacity: heroOpacity, scale: heroScale }}
-        >
-          <motion.div 
-            className="absolute inset-0 bg-[url('https://cdn.pantherclaw.in/images/img2.jpeg')] bg-cover bg-center opacity-30"
-          />
-          <motion.h1 
-            style={{ y: heroTextY }}
-            className="display text-[5rem] sm:text-[8rem] md:text-[12rem] lg:text-[16rem] leading-[0.85] tracking-tighter uppercase relative z-10"
-          >
-            WE ARE <br/> PANTHERCLAW
-          </motion.h1>
-          <motion.p 
-            style={{ y: heroTextY }}
-            className="mt-8 text-white/50 uppercase tracking-[0.3em] font-bold text-sm sm:text-base relative z-10"
-          >
-            Scroll to discover
-          </motion.p>
-        </motion.div>
+      {/* --- SVG FILM GRAIN OVERLAY --- */}
+      <div 
+        className="pointer-events-none fixed inset-0 z-50 opacity-[0.04] mix-blend-screen"
+        style={{
+          backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")`,
+        }}
+      ></div>
 
-        {/* 2. THE MANIFESTO */}
-        <motion.div 
-          className="absolute inset-0 flex items-center justify-center px-6 md:px-12 text-center"
-          style={{ opacity: manifestoOpacity, y: manifestoY }}
-        >
-          <h2 className="font-serif text-4xl sm:text-6xl md:text-7xl lg:text-8xl leading-tight max-w-[1200px]">
-            ENGINEERED IN INDIA. <br className="hidden md:block"/> FOR THOSE WHO <br className="hidden md:block"/> MOVE DIFFERENT.
-          </h2>
-        </motion.div>
-
-        {/* 3. PARALLAX LOOKBOOK */}
-        <div className="absolute inset-0 pointer-events-none">
-          {/* Image 1 (Left) */}
+      {/* 1. THE SHRINKING HERO */}
+      <div ref={heroRef} className="relative h-[150vh] w-full">
+        <div className="sticky top-0 h-screen w-full flex items-center justify-center overflow-hidden">
           <motion.div 
-            className="absolute left-[5%] top-[10%] w-[40%] md:w-[25%] aspect-[3/4]"
-            style={{ y: img1Y, opacity: img1Opacity }}
+            style={{ 
+              scale: heroScale, 
+              borderRadius: heroBorderRadius,
+              opacity: heroOpacity
+            }}
+            className="w-full h-full overflow-hidden relative"
           >
             <img 
-              src="https://cdn.pantherclaw.in/images/img1.jpeg" 
-              alt="Look 1"
-              className="w-full h-full object-cover grayscale opacity-80"
-            />
-          </motion.div>
-
-          {/* Image 2 (Right) */}
-          <motion.div 
-            className="absolute right-[5%] top-[30%] w-[50%] md:w-[35%] aspect-square"
-            style={{ y: img2Y, opacity: img2Opacity }}
-          >
-            <img 
-              src="https://cdn.pantherclaw.in/1780682689003-rky4f.jpeg" 
-              alt="Look 2"
+              src="https://cdn.pantherclaw.in/images/Gemini_Generated_Image_mbal2rmbal2rmbal%20(1)-clean.png" 
+              alt="Pantherclaw Hero"
               className="w-full h-full object-cover"
             />
-          </motion.div>
-
-          {/* Image 3 (Center, Massive) */}
-          <motion.div 
-            className="absolute left-1/2 -translate-x-1/2 top-[50%] w-[90%] md:w-[60%] aspect-[16/9]"
-            style={{ y: img3Y, opacity: img3Opacity }}
-          >
-            <img 
-              src="https://cdn.pantherclaw.in/images/img5.jpeg" 
-              alt="Look 3"
-              className="w-full h-full object-cover grayscale"
-            />
+            <div className="absolute inset-0 bg-black/30"></div>
+            <div className="absolute inset-0 flex items-center justify-center">
+              <h1 className="display text-[5rem] md:text-[10rem] lg:text-[14rem] tracking-tighter leading-none text-center mix-blend-overlay opacity-80">
+                PANTHERCLAW
+              </h1>
+            </div>
+            {/* Scroll Indicator */}
+            <div className="absolute bottom-12 left-1/2 -translate-x-1/2 flex flex-col items-center gap-4 text-white/50">
+              <span className="uppercase tracking-[0.3em] text-xs font-bold">Scroll</span>
+              <div className="w-[1px] h-12 bg-gradient-to-b from-white/50 to-transparent"></div>
+            </div>
           </motion.div>
         </div>
+      </div>
 
-        {/* 4. THE CALL TO ACTION */}
-        <motion.div 
-          className="absolute inset-0 flex flex-col items-center justify-center pointer-events-auto bg-black"
-          style={{ opacity: ctaOpacity }}
-        >
-          <motion.div style={{ y: ctaY }} className="text-center">
-            <h2 className="display text-6xl md:text-9xl uppercase tracking-tighter mb-12">
-              THE <br/> COLLECTION
+      {/* 2. THE TEXT FILL REVEAL */}
+      <div ref={textRef} className="relative h-[200vh] w-full flex items-center justify-center px-6 md:px-12">
+        <div className="sticky top-0 h-screen w-full flex flex-col items-center justify-center overflow-hidden max-w-[1400px] mx-auto">
+          <div className="relative text-center mb-16">
+            {/* Outlined Base Text */}
+            <h2 className="display text-5xl md:text-8xl lg:text-9xl leading-[0.9] tracking-tighter uppercase text-transparent" style={{ WebkitTextStroke: "1px rgba(255,255,255,0.2)" }}>
+              Engineered in India.<br />For those who<br />move different.
             </h2>
-            <Link 
-              to="/shop"
-              className="px-12 py-6 border border-white text-white hover:bg-white hover:text-black transition-colors uppercase tracking-[0.3em] font-bold text-sm"
+            
+            {/* Solid Fill Overlay Text */}
+            <motion.h2 
+              style={{ clipPath: textClipPath }}
+              className="absolute inset-0 display text-5xl md:text-8xl lg:text-9xl leading-[0.9] tracking-tighter uppercase text-white"
             >
-              Explore Now
-            </Link>
-          </motion.div>
-        </motion.div>
+              Engineered in India.<br />For those who<br />move different.
+            </motion.h2>
+          </div>
+        </div>
+      </div>
 
+      {/* 3. PINNED HORIZONTAL SCROLL GALLERY */}
+      <div ref={galleryRef} className="relative h-[400vh] w-full bg-[#0a0a0a]">
+        <div className="sticky top-0 h-screen w-full overflow-hidden flex items-center">
+          
+          {/* Moving Track */}
+          <motion.div 
+            style={{ x: galleryX }}
+            className="flex gap-12 md:gap-24 px-[10vw] items-center h-full min-w-max"
+          >
+            {/* Gallery Item 1 */}
+            <div className="w-[80vw] md:w-[60vw] h-[60vh] md:h-[80vh] flex flex-col justify-center">
+              <div className="w-full h-full overflow-hidden relative">
+                <img src="https://cdn.pantherclaw.in/images/1000144719.png" className="w-full h-full object-cover object-top" alt="Editorial 1" />
+              </div>
+              <div className="mt-6 flex justify-between uppercase tracking-widest text-xs font-bold text-white/50">
+                <span>01 // The Silhouette</span>
+                <span>Vol. I</span>
+              </div>
+            </div>
+
+            {/* Gallery Item 2 */}
+            <div className="w-[60vw] md:w-[40vw] h-[50vh] md:h-[70vh] flex flex-col justify-center">
+              <div className="w-full h-full overflow-hidden relative">
+                <img src="https://cdn.pantherclaw.in/1780682352961-kx9boc.png" className="w-full h-full object-cover object-top" alt="Editorial 2" />
+              </div>
+              <div className="mt-6 flex justify-between uppercase tracking-widest text-xs font-bold text-white/50">
+                <span>02 // Raw Details</span>
+                <span>Vol. I</span>
+              </div>
+            </div>
+
+            {/* Gallery Item 3 */}
+            <div className="w-[80vw] md:w-[60vw] h-[60vh] md:h-[80vh] flex flex-col justify-center">
+              <div className="w-full h-full overflow-hidden relative">
+                <img src="https://cdn.pantherclaw.in/images/1000144720.png" className="w-full h-full object-cover object-top" alt="Editorial 3" />
+              </div>
+              <div className="mt-6 flex justify-between uppercase tracking-widest text-xs font-bold text-white/50">
+                <span>03 // Excessive Drape</span>
+                <span>Vol. I</span>
+              </div>
+            </div>
+
+            {/* Final Item: The CTA */}
+            <div className="w-[100vw] h-screen flex flex-col items-center justify-center text-center">
+              <h2 className="display text-7xl md:text-[10rem] uppercase tracking-tighter leading-none mb-12">
+                THE<br/>COLLECTION
+              </h2>
+              <Link 
+                to="/shop"
+                className="px-16 py-8 bg-white text-black hover:bg-white/80 transition-colors uppercase tracking-[0.3em] font-bold text-sm"
+              >
+                Shop Now
+              </Link>
+            </div>
+            
+          </motion.div>
+        </div>
       </div>
     </div>
   );

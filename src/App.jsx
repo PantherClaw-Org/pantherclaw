@@ -12,6 +12,7 @@ import LoadingScreen from "./components/LoadingScreen";
 import ErrorBoundary from "./components/ErrorBoundary";
 import ScrollToTop from "./components/ScrollToTop";
 import Analytics from "./components/Analytics";
+import CookieBanner from "./components/CookieBanner";
 
 // Lazy load route components for code splitting
 const Home = lazy(() => import("./pages/Home"));
@@ -65,6 +66,7 @@ export default function App() {
           <ReactLenis root options={{ duration: 1.1, smoothWheel: true }}>
             <ReducedMotion />
             <BrowserRouter>
+              <CookieBanner />
               <ScrollToTop />
               <Analytics />
               <a href="#main-content" className="skip-link">
