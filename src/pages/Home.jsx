@@ -78,18 +78,18 @@ export default function Home() {
 
       {/* 2. 50/50 Split Banners */}
       <section className="w-full grid grid-cols-1 md:grid-cols-2 gap-y-1 md:gap-x-1 mb-20">
-        <Link to="/shop?category=Women" className="group block cursor-pointer">
+        <Link to="/shop?category=Men" className="group block cursor-pointer">
           <div className="w-full aspect-[3/4] overflow-hidden bg-[#111]">
             <img
               src="https://cdn.pantherclaw.in/images/Gemini_Generated_Image_t1txt2t1txt2t1tx (1)-clean.png"
-              alt="Women"
+              alt="Men"
               className="w-full h-full object-cover"
               loading="lazy"
             />
           </div>
-          <div className="w-full py-4 px-4 sm:px-6 md:px-8 flex items-center justify-between bg-black text-white">
+          <div className="sticky bottom-0 z-10 w-full py-4 px-4 sm:px-6 md:px-8 flex items-center justify-between bg-black text-white border-b border-[#222]">
             <span className="text-sm font-medium tracking-wider uppercase">
-              Women
+              Men
             </span>
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -108,18 +108,18 @@ export default function Home() {
             </svg>
           </div>
         </Link>
-        <Link to="/shop?category=Men" className="group block cursor-pointer">
+        <Link to="/shop?category=Women" className="group block cursor-pointer">
           <div className="w-full aspect-[3/4] overflow-hidden bg-[#111]">
             <img
-              src="images/Gemini_Generated_Image_evcefsevcefsevce-clean.png"
-              alt="Men"
+              src="https://cdn.pantherclaw.in/images/Gemini_Generated_Image_evcefsevcefsevce-clean.png"
+              alt="Women"
               className="w-full h-full object-cover"
               loading="lazy"
             />
           </div>
-          <div className="w-full py-4 px-4 sm:px-6 md:px-8 flex items-center justify-between bg-black text-white">
+          <div className="sticky bottom-0 z-10 w-full py-4 px-4 sm:px-6 md:px-8 flex items-center justify-between bg-black text-white border-b border-[#222]">
             <span className="text-sm font-medium tracking-wider uppercase">
-              Men
+              Women
             </span>
             <svg
               xmlns="http://www.w3.org/2000/svg"
