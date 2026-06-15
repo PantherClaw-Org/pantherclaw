@@ -1,0 +1,14 @@
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+[build.environment]
+  # VITE_CASHFREE_MODE is "production", which is a common word. 
+  # VITE_SUPABASE_URL is public. 
+  # Netlify's scanner flags them as leaked secrets because they appear in docs.
+  SECRETS_SCAN_OMIT_KEYS = "VITE_CASHFREE_MODE,VITE_SUPABASE_URL,VITE_SUPABASE_ANON_KEY"
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
