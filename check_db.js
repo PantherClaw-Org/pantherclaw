@@ -1,8 +1,10 @@
 import { createClient } from '@supabase/supabase-js';
+import dotenv from 'dotenv';
+dotenv.config({ path: '.env' });
 
 const supabase = createClient(
-  'https://unxnpjzemjnexltzemni.supabase.co',
-  process.env.SUPABASE_ANON_KEY || 'dummy'
+  process.env.VITE_SUPABASE_URL,
+  process.env.VITE_SUPABASE_ANON_KEY || 'dummy'
 );
 
 async function check() {

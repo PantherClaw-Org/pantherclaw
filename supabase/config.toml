@@ -422,3 +422,38 @@ entrypoint = "./functions/cashfree-checkout/index.ts"
 # Specifies static files to be bundled with the function. Supports glob patterns.
 # For example, if you want to serve static HTML pages in your function:
 # static_files = [ "./functions/cashfree-checkout/*.html" ]
+
+# -------------------------------------------------------------------
+# The functions below authenticate themselves (HMAC signature, shared
+# secret header, or order# + email) and are invoked by parties that do
+# NOT carry a Supabase user JWT (Cashfree's servers, pg_cron, guests).
+# They MUST disable Supabase's gateway JWT check, or the platform would
+# reject the request with 401 before our code ever runs.
+# -------------------------------------------------------------------
+
+# Cashfree calls this with an HMAC signature over the raw body. Verified
+# in code via constant-time compare + replay protection.
+[functions.cashfree-webhook]
+enabled = true
+verify_jwt = false
+
+# Invoked by pg_cron / internal callers with the x-pc-secret shared secret.
+[functions.order-status-email]
+enabled = true
+verify_jwt = false
+
+# Invoked by pg_cron with the x-pc-secret shared secret.
+[functions.abandoned-cart-email]
+enabled = true
+verify_jwt = false
+
+# Public guest order tracking. Authorizes on order number + email match.
+[functions.lookup-order]
+enabled = true
+verify_jwt = false
+
+# Invoked by pg_cron with the x-pc-secret shared secret. Re-checks Cashfree for
+# stale pending orders whose webhook never arrived and finalizes them.
+[functions.reconcile-orders]
+enabled = true
+verify_jwt = false

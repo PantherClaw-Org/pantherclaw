@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+
+# Keep private / transactional routes out of the index
+Disallow: /account
+Disallow: /checkout
+Disallow: /checkout/success
+
+Sitemap: https://pantherclaw.in/sitemap.xml

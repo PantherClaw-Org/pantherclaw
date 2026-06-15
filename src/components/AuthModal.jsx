@@ -35,6 +35,7 @@ export default function AuthModal({ isOpen, onClose }) {
         // If Confirm Email is ON, Supabase returns user but session is null
         if (!data.session) {
           setSuccessMsg("Account created! Please check your email to verify your account before checking out.");
+          setLoading(false);
           return; // Don't close modal so they can see the message
         }
         
@@ -42,7 +43,6 @@ export default function AuthModal({ isOpen, onClose }) {
       }
     } catch (err) {
       setError(err.message);
-    } finally {
       setLoading(false);
     }
   };

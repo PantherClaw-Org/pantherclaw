@@ -1,5 +1,5 @@
 {
-  "name": "untitled-folder-41",
+  "name": "pantherclaw",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@cashfreepayments/cashfree-js": "^1.0.7",
+    "@sentry/react": "^8.55.0",
     "@studio-freight/react-lenis": "^0.0.47",
     "@supabase/supabase-js": "^2.106.2",
     "@tanstack/react-query": "^5.100.14",

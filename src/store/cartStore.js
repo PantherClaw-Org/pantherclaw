@@ -1,6 +1,7 @@
-import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
-import { supabase } from '../lib/supabase';
+import { create } from "zustand";
+import { persist } from "zustand/middleware";
+import { supabase } from "../lib/supabase";
+import { primaryImage } from "../lib/productMedia";
 
 // Helper to calculate totals
 const calculateTotals = (items) => {
@@ -8,6 +9,8 @@ const calculateTotals = (items) => {
   const subtotal = items.reduce((s, i) => s + i.qty * i.price, 0);
   return { count, subtotal };
 };
+
+const generateUid = () => Date.now().toString(36) + Math.random().toString(36).substring(2);
 
 export const useCartStore = create(
   persist(
@@ -17,85 +20,152 @@ export const useCartStore = create(
       count: 0,
       subtotal: 0,
       session_id: null,
+      cart_uid: generateUid(),
 
       setOpen: (open) => set({ open }),
 
-      // Syncs the local cart to the DB after login, or fetches the DB cart
+      // On login: ensure a cart_session exists, then merge the local (guest)
+      // cart into the DB so it persists / can be recovered. Local storage stays
+      // the source of truth for display (fast, offline-friendly); the DB mirror
+      // captures variant + price_at_add for analytics and recovery.
       initializeDbCart: async (userId) => {
         if (!userId) return;
-
         try {
-          // 1. Get or create session
-          let { data: session, error: fetchError } = await supabase
-            .from('cart_sessions')
-            .select('id')
-            .eq('user_id', userId)
-            .single();
+          // The DB cart requires the auth user to be mirrored into public.users
+          // (the FK target for cart_sessions). If that row doesn't exist yet,
+          // skip the DB cart silently and keep the local cart as the source of
+          // truth, instead of throwing a foreign-key error on every load.
+          const { data: profileRow } = await supabase
+            .from("users")
+            .select("id")
+            .eq("id", userId)
+            .maybeSingle();
+          if (!profileRow) return;
+
+          // 1. Get or create the user's cart session.
+          let { data: session } = await supabase
+            .from("cart_sessions")
+            .select("id")
+            .eq("user_id", userId)
+            .maybeSingle();
 
           if (!session) {
             const { data: newSession, error: insertError } = await supabase
-              .from('cart_sessions')
+              .from("cart_sessions")
               .insert([{ user_id: userId }])
-              .select()
+              .select("id")
               .single();
-            
             if (insertError) throw insertError;
             session = newSession;
           }
 
-          if (session?.id) {
-            set({ session_id: session.id });
+          if (!session?.id) return;
+          set({ session_id: session.id });
+
+          // 2. Fetch existing DB items to merge
+          const { data: dbItems } = await supabase
+             .from("cart_items")
+             .select(`
+                 variant_id, quantity, price_at_add,
+                 product_variants (
+                   sizes (label),
+                   products (
+                     slug, name, subtitle, price,
+                     product_images (url, is_primary),
+                     product_colors (images)
+                   )
+                 )
+             `)
+             .eq("session_id", session.id);
+
+          const localItems = get().items.filter((i) => i.variant_id);
+          const localVariantIds = new Set(localItems.map(i => i.variant_id));
+          
+          let mergedItems = [...get().items];
+          let updated = false;
+
+          if (dbItems && dbItems.length > 0) {
+             for (const dbItem of dbItems) {
+                if (!localVariantIds.has(dbItem.variant_id)) {
+                   const variant = dbItem.product_variants;
+                   const product = variant?.products;
+                   const sizeLabel = variant?.sizes?.label || "M";
+                   const image = product?.product_images?.find(i => i.is_primary)?.url || 
+                                 product?.product_images?.[0]?.url || 
+                                 product?.product_colors?.[0]?.images?.[0] || "";
+                   mergedItems.push({
+                      key: dbItem.variant_id,
+                      variant_id: dbItem.variant_id,
+                      slug: product?.slug || "unknown",
+                      name: product?.name || "Product",
+                      subtitle: product?.subtitle || "",
+                      price: product?.price || dbItem.price_at_add,
+                      image: image,
+                      size: sizeLabel,
+                      qty: dbItem.quantity
+                   });
+                   updated = true;
+                }
+             }
+          }
+
+          if (updated) {
+             set({ items: mergedItems, ...calculateTotals(mergedItems) });
+          }
+
+          // 3. Merge local items (that carry a variant_id) into the DB cart.
+          if (localItems.length > 0) {
+            const rows = localItems.map((i) => ({
+              session_id: session.id,
+              variant_id: i.variant_id,
+              quantity: i.qty,
+              price_at_add: i.price,
+            }));
+            await supabase
+              .from("cart_items")
+              .upsert(rows, { onConflict: "session_id,variant_id" });
           }
         } catch (error) {
           console.error("Failed to initialize DB cart:", error);
-          // Do not crash the app, just keep session_id null so local cart works
+          // Never crash the app — keep the local cart working.
         }
-
-        // 2. Push any local items that aren't in the DB yet
-        const localItems = get().items;
-        if (localItems.length > 0) {
-          for (const item of localItems) {
-            // Upsert doesn't work seamlessly without constraints on (session_id, variant_id)
-            // Wait, we DO have a unique constraint on (session_id, variant_id)!
-            // We need variant_id. Wait, our local cart items don't store variant_id directly, they store product.slug and size!
-            // This is a migration issue: local cart needs variant_ids. 
-            // For now, we will clear local items if they lack variant_id to avoid crash, or fetch variant_ids.
-            // A true enterprise system would resolve variant_ids here.
-          }
-        }
-
-        // 3. Fetch canonical DB cart
-        // For Phase 1, we rely on local storage primarily and sync manually if needed, 
-        // but let's implement basic DB fetching for cart items.
-        // To keep this frontend-first and blazing fast, we will rely on Zustand local state
-        // and just background sync to Supabase.
       },
 
-      addItem: async (product, size, variantId) => {
+      addItem: async (product, size, variantId, customImage, customSubtitle) => {
         const { items, session_id } = get();
-        // Fallback for key if variantId is missing in older local carts
         const key = variantId || `${product.slug}-${size}`;
         const existing = items.find((i) => i.key === key);
-        
+
+        // Cap the whole bag at 20 items (PANTHERCLAW order limit).
+        const currentTotal = items.reduce((s, i) => s + i.qty, 0);
+        if (currentTotal >= 20) {
+          set({ open: true });
+          return;
+        }
+
         let newItems;
         let newQty = 1;
-        
+
         if (existing) {
           newQty = Math.min(20, existing.qty + 1);
           newItems = items.map((i) =>
-            i.key === key ? { ...i, qty: newQty } : i
+            i.key === key ? { ...i, qty: newQty } : i,
           );
         } else {
           newItems = [
             ...items,
             {
               key,
-              variant_id: variantId, // Crucial for DB checkout
+              variant_id: variantId,
               slug: product.slug,
               name: product.name,
-              subtitle: product.subtitle,
+              subtitle: customSubtitle || product.subtitle,
               price: product.price,
-              image: product.images?.[0] || product.product_colors?.[0]?.images?.[0],
+              image:
+                customImage ||
+                primaryImage(product)?.url ||
+                product.images?.[0] ||
+                product.product_colors?.[0]?.images?.[0],
               size,
               qty: 1,
             },
@@ -104,25 +174,54 @@ export const useCartStore = create(
 
         set({ items: newItems, open: true, ...calculateTotals(newItems) });
 
-        // Background sync to DB if logged in
         if (session_id && variantId) {
-          if (existing) {
-            await supabase.from('cart_items').update({ quantity: newQty }).eq('session_id', session_id).eq('variant_id', variantId);
-          } else {
-            await supabase.from('cart_items').insert([{ session_id, variant_id: variantId, quantity: 1, price_at_add: product.price }]);
-          }
+          await supabase
+            .from("cart_items")
+            .upsert(
+              {
+                session_id,
+                variant_id: variantId,
+                quantity: newQty,
+                price_at_add: product.price,
+              },
+              { onConflict: "session_id,variant_id" },
+            )
+            .then(
+              ({ error }) => error && console.error("cart sync (add):", error),
+            );
+          // Reset the abandonment timer used by the reminder job.
+          await supabase
+            .from("cart_sessions")
+            .update({
+              last_activity_at: new Date().toISOString(),
+              reminder_sent_at: null,
+            })
+            .eq("id", session_id);
         }
       },
 
       removeItem: async (key) => {
         const { items, session_id } = get();
-        const itemToRemove = items.find(i => i.key === key);
+        const itemToRemove = items.find((i) => i.key === key);
         const newItems = items.filter((i) => i.key !== key);
-        
+
         set({ items: newItems, ...calculateTotals(newItems) });
 
         if (session_id && itemToRemove?.variant_id) {
-          await supabase.from('cart_items').delete().eq('session_id', session_id).eq('variant_id', itemToRemove.variant_id);
+          await supabase
+            .from("cart_items")
+            .delete()
+            .eq("session_id", session_id)
+            .eq("variant_id", itemToRemove.variant_id);
+          // Keep the cart "active" so the abandoned-cart reminder reflects real
+          // inactivity, not edits the shopper is actively making.
+          await supabase
+            .from("cart_sessions")
+            .update({
+              last_activity_at: new Date().toISOString(),
+              reminder_sent_at: null,
+            })
+            .eq("id", session_id);
         }
       },
 
@@ -131,28 +230,55 @@ export const useCartStore = create(
         const item = items.find((i) => i.key === key);
         if (!item) return;
 
-        const newQty = Math.max(1, Math.min(20, item.qty + delta));
+        const othersTotal = items.reduce(
+          (s, i) => s + (i.key === key ? 0 : i.qty),
+          0,
+        );
+        const maxForThis = Math.max(1, 20 - othersTotal);
+        const newQty = Math.max(1, Math.min(maxForThis, item.qty + delta));
         const newItems = items.map((i) =>
-          i.key === key ? { ...i, qty: newQty } : i
+          i.key === key ? { ...i, qty: newQty } : i,
         );
 
         set({ items: newItems, ...calculateTotals(newItems) });
 
         if (session_id && item.variant_id) {
-          await supabase.from('cart_items').update({ quantity: newQty }).eq('session_id', session_id).eq('variant_id', item.variant_id);
+          await supabase
+            .from("cart_items")
+            .update({ quantity: newQty })
+            .eq("session_id", session_id)
+            .eq("variant_id", item.variant_id);
+          // Quantity changes count as activity — reset the abandonment timer so
+          // the reminder email doesn't fire while the cart is being edited.
+          await supabase
+            .from("cart_sessions")
+            .update({
+              last_activity_at: new Date().toISOString(),
+              reminder_sent_at: null,
+            })
+            .eq("id", session_id);
         }
       },
 
       clear: async () => {
         const { session_id } = get();
-        set({ items: [], count: 0, subtotal: 0 });
+        set({ items: [], count: 0, subtotal: 0, open: false, cart_uid: generateUid() });
         if (session_id) {
-          await supabase.from('cart_items').delete().eq('session_id', session_id);
+          await supabase
+            .from("cart_items")
+            .delete()
+            .eq("session_id", session_id);
         }
       },
     }),
     {
-      name: 'pantherclaw-cart-storage',
-    }
-  )
+      name: "pantherclaw-cart-storage",
+      partialize: (state) => ({
+        items: state.items,
+        count: state.count,
+        subtotal: state.subtotal,
+        cart_uid: state.cart_uid,
+      }),
+    },
+  ),
 );
