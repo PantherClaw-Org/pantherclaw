@@ -58,7 +58,7 @@ export default function Shop() {
     baseUrl + "/shop" + (category ? "?category=" + category : "");
 
   return (
-    <div className="pt-28 px-4 sm:px-6 md:px-12 max-w-[1600px] mx-auto min-h-screen">
+    <div className="pt-32 px-4 sm:px-6 md:px-12 max-w-[1600px] mx-auto min-h-screen flex flex-col">
       <Helmet>
         <title>{title}</title>
         <meta
@@ -68,13 +68,15 @@ export default function Shop() {
         <link rel="canonical" href={canonical} />
       </Helmet>
 
-      <div className="mb-10 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+      {/* Header and Filters Row */}
+      <div className="mb-8 flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between border-b border-white/10 pb-6">
         <h1 className="font-serif text-5xl">
           {category ? category : "Shop All"}
         </h1>
-        <div className="flex flex-wrap items-center gap-3">
-          <label className="flex items-center gap-2 text-xs text-ash">
-            <span className="uppercase tracking-[0.18em]">Sort</span>
+        
+        <div className="flex flex-wrap items-center gap-4 md:gap-8">
+          <label className="flex items-center gap-3 text-xs text-white group cursor-pointer">
+            <span className="uppercase tracking-[0.2em] font-bold text-white/50 group-hover:text-white transition-colors">Sort</span>
             <select
               value={sort}
               onChange={(e) =>
@@ -83,87 +85,65 @@ export default function Shop() {
                   e.target.value === "featured" ? "" : e.target.value,
                 )
               }
-              className="border border-white/10 bg-transparent px-3 py-2 text-sm text-smoke focus:border-smoke focus:outline-none"
+              className="bg-transparent border-b border-white/20 pb-1 text-white focus:outline-none focus:border-white transition-colors font-serif italic cursor-pointer appearance-none pr-4"
             >
               {Object.entries(SORTS).map(([value, label]) => (
                 <option
                   key={value}
                   value={value}
-                  className="bg-[#111] text-smoke"
+                  className="bg-[#111] text-white not-italic font-sans"
                 >
                   {label}
                 </option>
               ))}
             </select>
           </label>
-          <label className="flex items-center gap-2 text-xs text-ash">
-            <span className="uppercase tracking-[0.18em]">Max Price</span>
-            <select
+          <label className="flex items-center gap-3 text-xs text-white group cursor-text">
+            <span className="uppercase tracking-[0.2em] font-bold text-white/50 group-hover:text-white transition-colors">Max Price</span>
+            <input
+              type="number"
+              placeholder="₹..."
               value={maxPrice || ""}
               onChange={(e) => updateParam("maxPrice", e.target.value)}
-              className="border border-white/10 bg-transparent px-3 py-2 text-sm text-smoke focus:border-smoke focus:outline-none"
-            >
-              <option value="" className="bg-[#111] text-smoke">
-                All
-              </option>
-              <option value="200000" className="bg-[#111] text-smoke">
-                Under \u20b92,000
-              </option>
-              <option value="350000" className="bg-[#111] text-smoke">
-                Under \u20b93,500
-              </option>
-              <option value="500000" className="bg-[#111] text-smoke">
-                Under \u20b95,000
-              </option>
-            </select>
+              className="w-20 bg-transparent border-b border-white/20 pb-1 text-white placeholder:text-white/20 focus:outline-none focus:border-white transition-colors font-serif italic"
+            />
           </label>
         </div>
       </div>
 
-      {isLoading && (
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-          {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="animate-pulse flex flex-col gap-4">
-              <div className="bg-white/10 aspect-[3/4] w-full" />
-              <div className="h-4 bg-white/10 w-2/3" />
-              <div className="h-4 bg-white/10 w-1/3" />
-            </div>
-          ))}
-        </div>
-      )}
-
-      {isError && (
-        <div className="text-red-500 py-10">
-          Failed to load products. Please try again.
-        </div>
-      )}
-
-      {!isLoading && !isError && visibleProducts.length === 0 && (
-        <div className="py-10 text-ash">No products found.</div>
-      )}
-
-      {!isLoading && !isError && visibleProducts.length > 0 && (
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-          {visibleProducts.flatMap((p) =>
-            p.product_colors && p.product_colors.length > 0 ? (
-              p.product_colors.map((color) => (
-                <ProductCard
-                  key={`${p.id}-${color.id}`}
-                  product={{
+      {/* Grid Mosaic */}
+      <div className="flex-1 w-full bg-black">
+        {isLoading ? (
+          <div className="py-32 text-center text-white/50 uppercase tracking-widest font-bold text-sm">
+            Loading collection...
+          </div>
+        ) : isError ? (
+          <div className="py-32 text-center text-red-500 uppercase tracking-widest font-bold text-sm">
+            Failed to load products.
+          </div>
+        ) : visibleProducts.length === 0 ? (
+          <div className="py-32 text-center text-white/50 uppercase tracking-widest font-bold text-sm">
+            No products found matching criteria.
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-x-4 gap-y-12 pt-8">
+            {visibleProducts.flatMap((p) =>
+              p.product_colors && p.product_colors.length > 0
+                ? p.product_colors.map((color) => ({
                     ...p,
                     color_slug: color.color_slug,
                     images: color.images,
-                    subtitle: `${p.subtitle ? p.subtitle + " \u00b7 " : ""}${color.color_name}`,
+                    subtitle: `${p.subtitle ? p.subtitle + " · " : ""}${color.color_name}`,
                     product_colors: [color],
-                  }}
-                />
-              ))
-            ) : (
-              <ProductCard key={p.slug || p.id} product={p} />
-            ),
-          )}
-        </div>
-      )}
+                    key: `${p.id}-${color.id}`,
+                  }))
+                : [{ ...p, key: p.slug || p.id }]
+            ).map((p, i) => (
+              <ProductCard key={p.key} product={p} index={i} />
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

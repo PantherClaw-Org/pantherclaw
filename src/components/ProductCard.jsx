@@ -104,19 +104,19 @@ export default function ProductCard({ product, index = 0 }) {
       </div>
       <div className="mt-4 flex items-start justify-between gap-3">
         <div>
-          <h3 className="font-sans text-sm font-semibold tracking-tight">
+          <h3 className="font-serif text-lg uppercase tracking-tighter leading-none mb-1">
             {product.name}
           </h3>
-          <p className="mt-0.5 text-xs text-ash">
-            {[product.subtitle, fit].filter(Boolean).join(" · ")}
+          <p className="text-[0.65rem] uppercase tracking-widest text-white/50 font-bold">
+            {[product.subtitle, fit].filter(Boolean).join(" // ")}
           </p>
         </div>
-        <div className="text-right">
-          <span className="font-sans text-sm font-medium">
+        <div className="text-right shrink-0">
+          <span className="font-serif text-sm">
             {formatPrice(product.price)}
           </span>
           {hasDiscount && (
-            <span className="ml-1.5 font-sans text-xs text-ash line-through">
+            <span className="ml-1.5 text-[0.65rem] text-white/40 line-through tracking-widest">
               {formatPrice(mrp)}
             </span>
           )}

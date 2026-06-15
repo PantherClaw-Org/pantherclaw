@@ -194,7 +194,7 @@ export default function Home() {
         {/* Mobile: Grid of 2 columns */}
         <div className="grid md:hidden grid-cols-2 w-full">
           {[
-            "https://cdn.pantherclaw.in/images/1000144708.png",
+            "https://cdn.pantherclaw.in/images/Gemini_Generated_Image_mbal2rmbal2rmbal (1)-clean.png",
             "https://cdn.pantherclaw.in/images/1000144719.png",
             "https://cdn.pantherclaw.in/images/1000144720.png",
             "https://cdn.pantherclaw.in/images/1000150020.png",

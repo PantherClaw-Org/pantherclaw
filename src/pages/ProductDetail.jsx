@@ -471,12 +471,6 @@ export default function ProductDetail() {
 
         {/* Right: Sticky Details */}
         <div className="w-full md:flex-1 md:sticky md:top-32 h-fit">
-          <div className="mb-6 flex items-center gap-2 text-xs uppercase tracking-widest font-bold text-ash">
-            <Link to="/" className="hover:text-white transition-colors">Home</Link>
-            <span>/</span>
-            <Link to="/shop" className="hover:text-white transition-colors">Shop</Link>
-          </div>
-          
           <div className="flex justify-between items-start mb-2">
             <h1 className="font-serif text-4xl">{product.name}</h1>
             <button
