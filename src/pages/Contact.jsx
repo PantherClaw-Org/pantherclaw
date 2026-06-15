@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Helmet } from "react-helmet-async";
-import { Mail, Instagram, MapPin } from "lucide-react";
+import { Mail, MapPin } from "lucide-react";
+import { FaInstagram } from "react-icons/fa";
 
 const SUPPORT_EMAIL = "support@pantherclaw.in";
 
@@ -52,7 +53,7 @@ export default function Contact() {
             </div>
           </div>
           <div className="flex items-start gap-4">
-            <Instagram className="w-5 h-5 text-white/50 mt-1" />
+            <FaInstagram className="w-5 h-5 text-white/50 mt-1" />
             <div>
               <p className="label text-white/40 mb-1">Social</p>
               <a
