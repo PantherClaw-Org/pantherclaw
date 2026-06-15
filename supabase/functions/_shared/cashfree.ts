@@ -31,7 +31,9 @@ export async function fetchCashfreeOrder(orderId: string): Promise<any> {
   });
   const data = await res.json();
   if (!res.ok) {
-    throw new Error(`Cashfree order lookup failed: ${JSON.stringify(data)}`);
+    const err = new Error(`Cashfree order lookup failed: ${JSON.stringify(data)}`);
+    (err as any).status = res.status;
+    throw err;
   }
   return data;
 }

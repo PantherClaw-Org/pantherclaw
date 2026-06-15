@@ -27,7 +27,7 @@ export default function CheckoutSuccess() {
   const { clear } = useCartStore();
   const { user } = useAuth();
 
-  // processing | success | failed | timeout
+  // processing | success | failed | timeout | action_required
   const [status, setStatus] = useState("processing");
   const [order, setOrder] = useState(null);
   const clearedRef = useRef(false);
@@ -82,6 +82,17 @@ export default function CheckoutSuccess() {
               }
             }
             setStatus("success");
+            return;
+          }
+
+          if (s === "pending" && ord.payment_method === "cod") {
+            if (!clearedRef.current) {
+              clearedRef.current = true;
+              await clear();
+              localStorage.removeItem("checkout_address_id");
+              // We do not fire trackPurchase until they confirm the COD order.
+            }
+            setStatus("action_required");
             return;
           }
 
@@ -203,6 +214,32 @@ export default function CheckoutSuccess() {
             {user ? "View Orders" : "Track Order"}
           </Link>
         </>
+      )}
+
+      {status === "action_required" && (
+        <div className="bg-[#fcefc7] text-[#856404] p-8 max-w-lg border-2 border-[#ffeeba]">
+          <h1 className="text-3xl font-serif mb-4 font-bold uppercase tracking-widest">Action Required</h1>
+          <p className="mb-6 text-lg">
+            We have received your Cash on Delivery request. To secure your items and complete the order, you <strong>must</strong> confirm it via email.
+          </p>
+          <div className="bg-white/50 p-6 border border-[#ffeeba] mb-6 text-left">
+            <h2 className="font-bold mb-2 text-black">What to do next:</h2>
+            <ol className="list-decimal pl-5 space-y-2 text-black">
+              <li>Open your email inbox ({order?.customer_email || "the email you provided"}).</li>
+              <li>Find the email from <strong>PANTHERCLAW</strong>.</li>
+              <li>Click the <strong>Confirm Order</strong> button.</li>
+            </ol>
+          </div>
+          <p className="text-sm opacity-80 mb-8 font-medium">
+            ⚠️ If you do not confirm within 30 minutes, your order will be automatically cancelled and the items will be released back to the store.
+          </p>
+          <button
+            onClick={() => navigate("/")}
+            className="bg-[#856404] text-white px-8 py-4 label hover:bg-[#6c5103] transition-colors uppercase tracking-widest"
+          >
+            Return to Store
+          </button>
+        </div>
       )}
 
       {status === "failed" && (

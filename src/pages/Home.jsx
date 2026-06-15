@@ -47,7 +47,7 @@ export default function Home() {
         <Link to="/shop" className="group block cursor-pointer">
           <div className="w-full h-[75vh] md:h-[100vh] overflow-hidden bg-[#111]">
             <img
-              src="/images/Gemini_Generated_Image_motm6wmotm6wmotm-clean.png"
+              src="https://cdn.pantherclaw.in/images/Gemini_Generated_Image_motm6wmotm6wmotm-clean.png"
               alt="Spring Drop"
               className="w-full h-full object-cover object-[center_30%]"
               fetchpriority="high"
@@ -81,7 +81,7 @@ export default function Home() {
         <Link to="/shop?category=Women" className="group block cursor-pointer">
           <div className="w-full aspect-[3/4] overflow-hidden bg-[#111]">
             <img
-              src="/images/Gemini_Generated_Image_t1txt2t1txt2t1tx (1)-clean.png"
+              src="https://cdn.pantherclaw.in/images/Gemini_Generated_Image_t1txt2t1txt2t1tx (1)-clean.png"
               alt="Women"
               className="w-full h-full object-cover"
               loading="lazy"
@@ -145,12 +145,12 @@ export default function Home() {
         {/* Desktop: Grid of 3 columns */}
         <div className="hidden md:grid grid-cols-3 w-full">
           {[
-            "images/Gemini_Generated_Image_mbal2rmbal2rmbal (1)-clean.png",
-            "/images/1000144719.png",
-            "/images/1000144720.png",
-            "images/Gemini_Generated_Image_jtr8kcjtr8kcjtr8-clean.png",
-            "images/Gemini_Generated_Image_n0b4ygn0b4ygn0b4-clean.png",
-            "images/Gemini_Generated_Image_38zhne38zhne38zh-clean.png",
+            "https://cdn.pantherclaw.in/images/Gemini_Generated_Image_mbal2rmbal2rmbal (1)-clean.png",
+            "https://cdn.pantherclaw.in/images/1000144719.png",
+            "https://cdn.pantherclaw.in/images/1000144720.png",
+            "https://cdn.pantherclaw.in/images/Gemini_Generated_Image_jtr8kcjtr8kcjtr8-clean.png",
+            "https://cdn.pantherclaw.in/images/Gemini_Generated_Image_n0b4ygn0b4ygn0b4-clean.png",
+            "https://cdn.pantherclaw.in/images/Gemini_Generated_Image_38zhne38zhne38zh-clean.png",
           ].map((src, index) => (
             <Link
               key={index}
@@ -170,12 +170,12 @@ export default function Home() {
         {/* Mobile: Grid of 2 columns */}
         <div className="grid md:hidden grid-cols-2 w-full">
           {[
-            "/images/1000144708.png",
-            "/images/1000144719.png",
-            "/images/1000144720.png",
-            "/images/1000150020.png",
-            "/images/1000150765.png",
-            "/images/1000150766.png",
+            "https://cdn.pantherclaw.in/images/1000144708.png",
+            "https://cdn.pantherclaw.in/images/1000144719.png",
+            "https://cdn.pantherclaw.in/images/1000144720.png",
+            "https://cdn.pantherclaw.in/images/1000150020.png",
+            "https://cdn.pantherclaw.in/images/1000150765.png",
+            "https://cdn.pantherclaw.in/images/1000150766.png",
           ].map((src, index) => (
             <Link
               key={index}

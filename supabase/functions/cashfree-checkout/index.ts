@@ -3,10 +3,11 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.0";
 import { corsHeaders, jsonResponse, errorResponse } from "../_shared/cors.ts";
 import {
   CASHFREE_BASE_URL,
+  CASHFREE_ENV,
   cashfreeHeaders,
   fetchCashfreeOrder,
 } from "../_shared/cashfree.ts";
-import { sendEmail, orderConfirmationHtml } from "../_shared/email.ts";
+import { sendEmail, orderConfirmationHtml, codActionRequiredHtml } from "../_shared/email.ts";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL") || "";
 const SUPABASE_SERVICE_ROLE_KEY =
@@ -49,8 +50,12 @@ async function getAuthedUserId(req: Request): Promise<string | null> {
 // Response when the order is already paid, is a confirmed COD order, or still has
 // a live Cashfree payment session. Returns null when the order is dead/stale and
 // should be superseded by a fresh attempt.
-async function tryResumeExistingOrder(existing: any): Promise<Response | null> {
+async function tryResumeExistingOrder(existing: any, requestedPaymentMethod: string): Promise<Response | null> {
   if (!existing) return null;
+  
+  // If the user changed their payment method (e.g. Prepaid -> COD), this order 
+  // cannot be resumed. It must be superseded to free the locked inventory.
+  if (existing.payment_method !== requestedPaymentMethod) return null;
   const status = (existing.status || "").toString().toLowerCase();
   const dead = ["failed", "cancelled", "canceled", "payment_failed"];
   const settled = [
@@ -68,6 +73,7 @@ async function tryResumeExistingOrder(existing: any): Promise<Response | null> {
 
   // Confirmed COD order — nothing left to pay.
   if (existing.payment_method === "cod") {
+    // If it's already confirmed, it might need to resend the email if requested, but generally we just return true
     return jsonResponse({
       cod: true,
       order_id: existing.id,
@@ -110,8 +116,15 @@ async function tryResumeExistingOrder(existing: any): Promise<Response | null> {
         idempotent: true,
       });
     }
-  } catch (_) {
-    // No live Cashfree order (never created / expired) — fall through to supersede.
+  } catch (err: any) {
+    // If Cashfree returns a 404, the session was never created or expired,
+    // so we can safely fall through and supersede it.
+    if (err.status === 404 || (err.message && err.message.includes("404"))) {
+      return null;
+    }
+    // If it's a network issue or Cashfree is down, we MUST NOT supersede!
+    // Superseding releases the held inventory. We throw so the user can retry safely.
+    throw new Error("Payment gateway is temporarily unavailable. Please try again.");
   }
   return null;
 }
@@ -136,6 +149,12 @@ serve(async (req: Request) => {
   }
 
   try {
+    // SECURITY: Prevent Payload Size DOS. Reject payloads over 20KB before parsing.
+    const contentLength = Number(req.headers.get("content-length") || 0);
+    if (contentLength > 20000) {
+      return errorResponse("Payload too large", 413, "payload_too_large");
+    }
+
     const body = await req.json();
     const { customerPhone, customerEmail, orderMeta, cartItems } = body;
     const action = body.action;
@@ -156,13 +175,76 @@ serve(async (req: Request) => {
       const { data: ord, error } = await supabase
         .from("orders")
         .select(
-          "id, order_number, status, total_amount, subtotal, shipping_fee, discount_applied, currency, created_at, customer_email, order_items(product_name, product_image, size, color, quantity, price_at_purchase)",
+          "id, order_number, status, total_amount, subtotal, shipping_fee, discount_applied, currency, created_at, customer_email, payment_method, user_id, order_items(product_name, product_image, size, color, quantity, price_at_purchase)",
         )
         .eq("id", orderId)
         .maybeSingle();
       if (error) throw error;
       if (!ord) return errorResponse("Order not found", 404, "not_found");
+
+      // Strict Privacy Check: If this order belongs to a registered user,
+      // ONLY that exact user is allowed to view it.
+      const authHeader = req.headers.get("Authorization");
+      const token = authHeader?.split(" ")[1] || "";
+      const { data: userReq } = await supabase.auth.getUser(token);
+      const requestUserId = userReq?.user?.id;
+
+      if (ord.user_id && ord.user_id !== requestUserId) {
+        return errorResponse("Unauthorized to view this order.", 403, "unauthorized");
+      }
+
       return jsonResponse({ order: ord });
+    }
+
+    if (action === "confirm-cod") {
+      const orderId = body.orderId;
+      if (!orderId) return errorResponse("Missing orderId", 400, "missing_order");
+
+      // Verify order is actually pending COD
+      const { data: ord, error: fetchErr } = await supabase
+        .from("orders")
+        .select("id, status, payment_method, order_number, total_amount, subtotal, shipping_fee, discount_applied, customer_email, shipping_address_snapshot, order_items(product_name, product_image, size, color, quantity, price_at_purchase)")
+        .eq("id", orderId)
+        .maybeSingle();
+      if (fetchErr) throw fetchErr;
+      if (!ord) return errorResponse("Order not found", 404, "not_found");
+      
+      if (ord.payment_method !== "cod") {
+        return errorResponse("Not a COD order", 400, "invalid_payment_method");
+      }
+      if (ord.status !== "pending") {
+        return jsonResponse({ message: "Order is already confirmed or cancelled", order: ord });
+      }
+
+      // Confirm it
+      const { error: codErr } = await supabase.rpc("place_cod_order", {
+        p_order_id: orderId,
+      });
+      if (codErr) throw codErr;
+
+      // Send the standard Confirmation Email now that it's confirmed
+      if (ord.customer_email) {
+        const orderObj = {
+          order_number: ord.order_number,
+          total_amount: ord.total_amount,
+          subtotal: ord.subtotal,
+          shipping_fee: ord.shipping_fee,
+          discount_amount: ord.discount_applied,
+          payment_method: "cod",
+          shipping_address: ord.shipping_address_snapshot,
+        };
+        try {
+          await sendEmail({
+            to: ord.customer_email,
+            subject: `Order Confirmed: ${ord.order_number || "PANTHERCLAW"}`,
+            html: orderConfirmationHtml(orderObj, ord.order_items || []),
+          });
+        } catch (e) {
+          console.error("COD final confirmation email failed:", (e as Error).message);
+        }
+      }
+
+      return jsonResponse({ success: true });
     }
 
     if (action !== "create-order") {
@@ -173,13 +255,24 @@ serve(async (req: Request) => {
       return errorResponse("Your cart is empty.", 400, "empty_cart");
     }
 
-    const totalQty = cartItems.reduce(
-      (s: number, i: any) => s + (Number(i.qty) || 1),
-      0,
-    );
+    if (cartItems.length > 20) {
+      return errorResponse("Too many unique items in cart.", 400, "max_items");
+    }
+
+    let totalQty = 0;
+    for (const item of cartItems) {
+      // SECURITY: Strictly enforce positive integers to prevent Negative Quantity Injection
+      // which could lead to artificial stock inflation or manipulated order subtotals.
+      const qty = Number(item.qty) || 1;
+      if (!Number.isInteger(qty) || qty < 1) {
+        return errorResponse("Invalid item quantity. Quantities must be positive integers.", 400, "invalid_quantity");
+      }
+      totalQty += qty;
+    }
+
     if (totalQty > 20) {
       return errorResponse(
-        "Orders are limited to 20 items. Please reduce your bag.",
+        "Orders are limited to 20 total items. Please reduce your bag.",
         400,
         "max_quantity",
       );
@@ -199,7 +292,8 @@ serve(async (req: Request) => {
         .eq("idempotency_key", idempotencyKey)
         .maybeSingle();
       if (dupe) {
-        const resumed = await tryResumeExistingOrder(dupe);
+        const requestedMethod = body.paymentMethod === "cod" ? "cod" : "prepaid";
+        const resumed = await tryResumeExistingOrder(dupe, requestedMethod);
         if (resumed) return resumed;
         // A stale/abandoned order is squatting on this cart's idempotency key.
         // Free it (release held stock + detach the key) so the fresh order
@@ -232,15 +326,15 @@ serve(async (req: Request) => {
       }
     }
 
-    // SECURITY: if a line references a variant we cannot resolve to an active
-    // DB price, reject the whole order rather than trusting the client price.
+    // SECURITY: strictly enforce that EVERY item resolves to an active DB price.
+    // Client-supplied prices must NEVER be trusted.
     for (const item of cartItems) {
       if (
-        item.variant_id &&
+        !item.variant_id ||
         typeof priceByVariant[item.variant_id] !== "number"
       ) {
         return errorResponse(
-          "One or more items are no longer available. Please refresh your bag.",
+          "One or more items are no longer available or could not be verified. Please refresh your bag.",
           409,
           "invalid_item",
         );
@@ -251,13 +345,9 @@ serve(async (req: Request) => {
     let totalWeight = 0;
     for (const item of cartItems) {
       const qty = Number(item.qty) || 1;
-      const trusted = item.variant_id ? priceByVariant[item.variant_id] : null;
-      // Fall back to the client price only when there is genuinely no variant.
-      const unit =
-        typeof trusted === "number" ? trusted : Number(item.price) || 0;
-      subtotal += unit * qty;
-      totalWeight +=
-        (item.variant_id ? weightByVariant[item.variant_id] || 0 : 0) * qty;
+      const trusted = priceByVariant[item.variant_id];
+      subtotal += trusted * qty;
+      totalWeight += weightByVariant[item.variant_id] * qty;
     }
 
     // -----------------------------------------------------------------
@@ -434,7 +524,8 @@ serve(async (req: Request) => {
           .select("id, order_number, status, total_amount, payment_method")
           .eq("idempotency_key", idempotencyKey)
           .maybeSingle();
-        const resumed = await tryResumeExistingOrder(existing);
+        const requestedMethod = body.paymentMethod === "cod" ? "cod" : "prepaid";
+        const resumed = await tryResumeExistingOrder(existing, requestedMethod);
         if (resumed) return resumed;
       }
       throw orderError;
@@ -445,13 +536,11 @@ serve(async (req: Request) => {
     // 6. Snapshot order items.
     // -----------------------------------------------------------------
     const itemsToInsert = cartItems.map((item: any) => {
-      const trusted = item.variant_id ? priceByVariant[item.variant_id] : null;
-      const unit =
-        typeof trusted === "number" ? trusted : Number(item.price) || 0;
+      const trusted = priceByVariant[item.variant_id];
       const qty = Number(item.qty) || 1;
-      const mrp = item.variant_id ? mrpByVariant[item.variant_id] : null;
-      const unitMrp = typeof mrp === "number" && mrp > unit ? mrp : null;
-      const lineDiscount = unitMrp ? (unitMrp - unit) * qty : 0;
+      const mrp = mrpByVariant[item.variant_id];
+      const unitMrp = typeof mrp === "number" && mrp > trusted ? mrp : null;
+      const lineDiscount = unitMrp ? (unitMrp - trusted) * qty : 0;
       return {
         order_id: dbOrderId,
         variant_id: item.variant_id || null,
@@ -462,7 +551,7 @@ serve(async (req: Request) => {
         color_hex: item.color_hex || null,
         sku: item.sku || null,
         quantity: qty,
-        price_at_purchase: unit,
+        price_at_purchase: trusted,
         unit_mrp: unitMrp,
         line_discount: lineDiscount,
         currency: "INR",
@@ -501,56 +590,44 @@ serve(async (req: Request) => {
     }
 
     // -----------------------------------------------------------------
-    // 6c. Cash on Delivery — no payment gateway. Confirm the order now,
-    //     finalize inventory, email the confirmation, and return.
+    // 6. COD specific path — skip Cashfree and return Action Required.
     // -----------------------------------------------------------------
     if (paymentMethod === "cod") {
-      const { error: codErr } = await supabase.rpc("place_cod_order", {
-        p_order_id: dbOrderId,
-      });
-      if (codErr) {
-        await supabase
-          .rpc("mark_order_failed", {
-            p_order_id: dbOrderId,
-            p_reason: "COD confirmation failed",
-          })
-          .then(
-          () => {},
-          () => {},
-        );
-        throw codErr;
-      }
-
-      // Explicitly set status to confirmed (in case place_cod_order set it to paid)
-      await supabase.from("orders").update({ status: "confirmed" }).eq("id", dbOrderId);
-
-      // Order confirmation email (best effort — never blocks the response).
-      try {
-        if (customerEmail) {
+      // Send the Action Required Email to confirm the COD order
+      if (customerEmail) {
+        const orderObj = {
+          order_number: dbOrderId.slice(0, 8), // Just a placeholder, db assigns it via trigger eventually
+          total_amount: totalAmount,
+          subtotal: subtotal,
+          shipping_fee: shippingFee,
+          discount_amount: discountAmount,
+          payment_method: "cod",
+          // For the Action Required email, we can approximate the address
+          shipping_address: guestAddress ? {
+            first_name: guestAddress.firstName,
+            last_name: guestAddress.lastName,
+            phone: guestAddress.phone,
+            line1: guestAddress.line1,
+            line2: guestAddress.line2,
+            city: guestAddress.city,
+            state: guestAddress.state,
+            postal_code: guestAddress.postalCode,
+          } : null
+        };
+        try {
           await sendEmail({
             to: customerEmail,
-            subject: `Order confirmed — ${orderData.order_number}`,
-            html: orderConfirmationHtml(
-              {
-                order_number: orderData.order_number,
-                total_amount: totalAmount,
-                shipping_fee: shippingFee,
-                customer_email: customerEmail,
-                payment_method: paymentMethod,
-              },
-              itemsToInsert,
-            ),
+            subject: "Action Required: Confirm your COD Order",
+            html: codActionRequiredHtml(orderObj, itemsToInsert, dbOrderId),
           });
+        } catch (e) {
+          console.error("COD action required email failed:", (e as Error).message);
         }
-      } catch (e) {
-        console.error("COD confirmation email failed:", (e as Error).message);
       }
 
       return jsonResponse({
-        cod: true,
+        cod_pending: true,
         order_id: dbOrderId,
-        order_number: orderData.order_number,
-        amount: totalAmount,
       });
     }
 

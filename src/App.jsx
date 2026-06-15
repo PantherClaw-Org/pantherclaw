@@ -20,6 +20,7 @@ const ProductDetail = lazy(() => import("./pages/ProductDetail"));
 const Story = lazy(() => import("./pages/Story"));
 const Checkout = lazy(() => import("./pages/Checkout"));
 const CheckoutSuccess = lazy(() => import("./pages/CheckoutSuccess"));
+const ConfirmCod = lazy(() => import("./pages/ConfirmCod"));
 const Account = lazy(() => import("./pages/Account"));
 const Contact = lazy(() => import("./pages/Contact"));
 const PrivacyPolicy = lazy(() => import("./pages/legal/PrivacyPolicy"));
@@ -87,6 +88,7 @@ export default function App() {
                         path="/checkout/success"
                         element={<CheckoutSuccess />}
                       />
+                      <Route path="/confirm-cod" element={<ConfirmCod />} />
                       <Route path="/account" element={<Account />} />
                       <Route path="/contact" element={<Contact />} />
                       <Route path="/privacy" element={<PrivacyPolicy />} />

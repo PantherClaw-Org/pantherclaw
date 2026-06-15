@@ -185,7 +185,6 @@ export default function Checkout() {
       // Any real change to the cart/address/promo produces a different key.
       const idemSig = JSON.stringify({
         items: items.map((i) => [i.variant_id, i.qty]),
-        pm: paymentMethod,
         addr: isGuest ? guestAddress : selectedAddressId,
         promo: appliedPromo?.id || null,
         ship: shippingMethod,
@@ -237,7 +236,7 @@ export default function Checkout() {
         throw new Error(msg);
       }
       // COD: the order is already confirmed server-side — skip the gateway.
-      if (edgeData?.cod) {
+      if (edgeData?.cod || edgeData?.cod_pending) {
         clear();
         navigate(`/checkout/success?order_id=${edgeData.order_id}`);
         return;

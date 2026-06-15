@@ -4,7 +4,7 @@ export const products = [
     name: "Signature Baggy",
     subtitle: "Light Wash · Baggy Wide-Leg",
     price: 4999,
-    images: ["/images/img3.jpeg", "/images/img4.jpeg"],
+    images: ["https://cdn.pantherclaw.in/images/img3.jpeg", "https://cdn.pantherclaw.in/images/img4.jpeg"],
     badge: "Bestseller",
     category: "Men"
   },
@@ -13,7 +13,7 @@ export const products = [
     name: "Obsidian Wide-Leg",
     subtitle: "Faded Black · Baggy Wide-Leg",
     price: 5499,
-    images: ["/images/img1.jpeg", "/images/img2.jpeg"],
+    images: ["https://cdn.pantherclaw.in/images/img1.jpeg", "https://cdn.pantherclaw.in/images/img2.jpeg"],
     badge: "New",
     category: "Men"
   },
@@ -22,7 +22,7 @@ export const products = [
     name: "Vintage Skater",
     subtitle: "Dirty Wash · Loose Skater",
     price: 4299,
-    images: ["/images/img5.jpeg", "/images/img6.jpeg"],
+    images: ["https://cdn.pantherclaw.in/images/img5.jpeg", "https://cdn.pantherclaw.in/images/img6.jpeg"],
     category: "Women"
   },
   {
@@ -30,7 +30,7 @@ export const products = [
     name: "Midnight Baggy",
     subtitle: "Carbon Black · Oversized Baggy",
     price: 5999,
-    images: ["/images/img2.jpeg", "/images/img1.jpeg"],
+    images: ["https://cdn.pantherclaw.in/images/img2.jpeg", "https://cdn.pantherclaw.in/images/img1.jpeg"],
     badge: "Bestseller",
     category: "Women"
   }

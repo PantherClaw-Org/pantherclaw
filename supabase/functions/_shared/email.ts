@@ -60,6 +60,7 @@ type OrderLike = {
   payment_method?: string | null;
   subtotal?: number | null;
   discount_amount?: number | null;
+  shipping_address?: any | null;
 };
 
 type ItemLike = {
@@ -68,6 +69,7 @@ type ItemLike = {
   color?: string | null;
   quantity?: number | null;
   price_at_purchase?: number | null;
+  product_image?: string | null;
 };
 
 export function orderConfirmationHtml(
@@ -78,14 +80,30 @@ export function orderConfirmationHtml(
     .map(
       (it) => `
       <tr>
-        <td style="padding:12px 0;border-bottom:1px solid #eee;font-size:14px;color:#111;">
-          ${escapeHtml(it.product_name || "Item")}
-          <div style="color:#888;font-size:12px;">
-            ${escapeHtml(it.size || "")}${it.color ? " · " + escapeHtml(it.color) : ""} · Qty ${it.quantity || 1}
-          </div>
-        </td>
-        <td style="padding:12px 0;border-bottom:1px solid #eee;font-size:14px;color:#111;text-align:right;white-space:nowrap;">
-          ${inr((it.price_at_purchase || 0) * (it.quantity || 1))}
+        <td style="padding:16px 0;border-bottom:1px solid #eee;">
+          <table style="width:100%;border-collapse:collapse;">
+            <tr>
+              ${
+                it.product_image
+                  ? `<td style="width:60px;padding-right:16px;vertical-align:top;">
+                      <img src="${escapeHtml(it.product_image)}" alt="${escapeHtml(it.product_name || "Item")}" style="width:60px;height:80px;object-fit:cover;border-radius:4px;background:#f5f5f5;" />
+                    </td>`
+                  : ""
+              }
+              <td style="vertical-align:top;font-size:14px;color:#111;">
+                <div style="font-weight:600;margin-bottom:4px;">${escapeHtml(it.product_name || "Item")}</div>
+                <div style="color:#888;font-size:12px;">
+                  ${escapeHtml(it.size || "")}${it.color ? " · " + escapeHtml(it.color) : ""}
+                </div>
+                <div style="color:#888;font-size:12px;margin-top:4px;">
+                  Qty: ${it.quantity || 1}
+                </div>
+              </td>
+              <td style="vertical-align:top;font-size:14px;color:#111;text-align:right;white-space:nowrap;font-weight:500;">
+                ${inr((it.price_at_purchase || 0) * (it.quantity || 1))}
+              </td>
+            </tr>
+          </table>
         </td>
       </tr>`,
     )
@@ -95,18 +113,25 @@ export function orderConfirmationHtml(
 <html>
   <body style="margin:0;background:#f5f5f5;font-family:Arial,Helvetica,sans-serif;">
     <div style="max-width:560px;margin:0 auto;background:#ffffff;">
-      <div style="background:#0a0a0a;color:#fafafa;padding:28px 32px;">
+      <div style="background:#0a0a0a;color:#fafafa;padding:28px 32px;text-align:center;">
         <div style="font-size:22px;letter-spacing:3px;font-weight:700;">PANTHERCLAW</div>
       </div>
       <div style="padding:32px;">
         <h1 style="font-size:20px;color:#111;margin:0 0 8px;">
-          ${order.payment_method === 'cod' ? 'Order Confirmed - Cash on Delivery' : 'Thank you for your order'}
+          ${order.payment_method === 'cod' ? 'Order Confirmed - Cash on Delivery' : 'Order Confirmed'}
         </h1>
-        <p style="color:#555;font-size:14px;margin:0 0 24px;">
-          ${order.payment_method === 'cod' ? 'Your order has been received. Please pay the total amount upon delivery.' : 'Your payment was received and your order is confirmed.'}
-          ${order.order_number ? `Your order number is <strong>${escapeHtml(order.order_number)}</strong>.` : ""}
+        <p style="color:#555;font-size:14px;margin:0 0 24px;line-height:1.5;">
+          Engineered for movement. Your order is officially confirmed. Welcome to the Inner Circle.
         </p>
+        
+        ${order.order_number ? `
+        <p style="color:#111;font-size:14px;font-weight:600;margin:0 0 24px;">
+          Order Number: <span style="color:#555;">${escapeHtml(order.order_number)}</span>
+        </p>
+        ` : ""}
+        
         <table style="width:100%;border-collapse:collapse;">${rows}</table>
+        
         <table style="width:100%;border-collapse:collapse;margin-top:16px;border-top:1px solid #eee;padding-top:8px;">
           <tr>
             <td style="padding:6px 0;font-size:14px;color:#555;">Subtotal</td>
@@ -126,10 +151,125 @@ export function orderConfirmationHtml(
             <td style="padding:16px 0 8px 0;border-top:1px solid #eee;font-size:16px;font-weight:700;color:#111;text-align:right;">${inr(order.total_amount || 0)}</td>
           </tr>
         </table>
-        <p style="color:#888;font-size:12px;margin-top:28px;">
-          You can track your order status anytime at <a href="https://pantherclaw.in/track-order" style="color:#111;text-decoration:underline;">pantherclaw.in/track-order</a>.<br><br>
-          We'll email you again when your order ships. Questions? Just reply to this email or contact us at <a href="mailto:orders@pantherclaw.in" style="color:#111;text-decoration:underline;">orders@pantherclaw.in</a>.
+
+        ${order.shipping_address ? `
+        <div style="margin-top:32px;border-top:1px solid #eee;padding-top:24px;">
+          <h3 style="font-size:16px;margin:0 0 12px;color:#111;">Shipping To</h3>
+          <p style="color:#555;font-size:14px;margin:0;line-height:1.5;">
+            ${escapeHtml(order.shipping_address.first_name || "")} ${escapeHtml(order.shipping_address.last_name || "")}<br>
+            ${escapeHtml(order.shipping_address.line1 || "")}<br>
+            ${order.shipping_address.line2 ? escapeHtml(order.shipping_address.line2) + "<br>" : ""}
+            ${escapeHtml(order.shipping_address.city || "")}, ${escapeHtml(order.shipping_address.state || "")} ${escapeHtml(order.shipping_address.postal_code || "")}
+          </p>
+          <p style="color:#555;font-size:14px;margin:12px 0 0;">
+            Phone: ${escapeHtml(order.shipping_address.phone || "")}
+          </p>
+        </div>
+        ` : ""}
+
+        <div style="margin-top:32px;border-top:1px solid #eee;padding-top:24px;">
+          <h3 style="font-size:16px;margin:0 0 12px;color:#111;">What's Next?</h3>
+          <p style="color:#555;font-size:14px;margin:0 0 24px;line-height:1.5;">
+            We process orders within 24-48 hours. You will receive another email with a tracking link as soon as your gear ships.
+          </p>
+          
+          <div style="text-align:center;margin-bottom:32px;">
+            <a href="https://pantherclaw.in/track-order" style="display:inline-block;background:#0a0a0a;color:#ffffff;padding:14px 28px;font-size:14px;font-weight:bold;text-decoration:none;letter-spacing:1px;text-transform:uppercase;">TRACK ORDER</a>
+          </div>
+
+          <p style="color:#555;font-size:14px;margin:0 0 12px;">
+            Doesn't fit right? We offer seamless returns. <a href="https://pantherclaw.in/returns" style="color:#111;text-decoration:underline;">View our Returns Policy</a>.
+          </p>
+          <p style="color:#555;font-size:14px;margin:0;">
+            Questions? Just reply to this email or contact us at <a href="mailto:support@pantherclaw.in" style="color:#111;text-decoration:underline;">support@pantherclaw.in</a>.
+          </p>
+        </div>
+      </div>
+      <div style="background:#0a0a0a;color:#888;padding:24px 32px;font-size:12px;text-align:center;">
+        <p style="margin:0 0 12px 0;">
+          <a href="https://instagram.com/pantherclawclothing" style="color:#fafafa;text-decoration:none;margin:0 8px;">Instagram</a>
         </p>
+        © ${new Date().getFullYear()} PANTHERCLAW · pantherclaw.in
+      </div>
+    </div>
+  </body>
+</html>`;
+}
+
+export function codActionRequiredHtml(
+  order: OrderLike,
+  items: ItemLike[],
+  orderId: string
+): string {
+  const rows = (items || [])
+    .map(
+      (it) => `
+      <tr>
+        <td style="padding:16px 0;border-bottom:1px solid #eee;">
+          <table style="width:100%;border-collapse:collapse;">
+            <tr>
+              ${
+                it.product_image
+                  ? `<td style="width:60px;padding-right:16px;vertical-align:top;">
+                      <img src="${escapeHtml(it.product_image)}" alt="${escapeHtml(it.product_name || "Item")}" style="width:60px;height:80px;object-fit:cover;border-radius:4px;background:#f5f5f5;" />
+                    </td>`
+                  : ""
+              }
+              <td style="vertical-align:top;font-size:14px;color:#111;">
+                <div style="font-weight:600;margin-bottom:4px;">${escapeHtml(it.product_name || "Item")}</div>
+                <div style="color:#888;font-size:12px;">
+                  ${escapeHtml(it.size || "")}${it.color ? " · " + escapeHtml(it.color) : ""}
+                </div>
+                <div style="color:#888;font-size:12px;margin-top:4px;">
+                  Qty: ${it.quantity || 1}
+                </div>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>`,
+    )
+    .join("");
+
+  const confirmUrl = `https://pantherclaw.in/confirm-cod?id=${orderId}`;
+
+  return `<!doctype html>
+<html>
+  <body style="margin:0;background:#f5f5f5;font-family:Arial,Helvetica,sans-serif;">
+    <div style="max-width:560px;margin:0 auto;background:#ffffff;">
+      <div style="background:#fcefb4;color:#111;padding:28px 32px;text-align:center;">
+        <div style="font-size:18px;font-weight:700;text-transform:uppercase;letter-spacing:1px;">Action Required</div>
+      </div>
+      <div style="padding:32px;">
+        <h1 style="font-size:20px;color:#111;margin:0 0 12px;">
+          Confirm Your COD Order
+        </h1>
+        <p style="color:#555;font-size:14px;margin:0 0 24px;line-height:1.5;">
+          You chose Cash on Delivery. To finalize your order and reserve your items, please confirm your request by clicking the button below.
+        </p>
+
+        <div style="text-align:center;margin-bottom:32px;">
+          <a href="${confirmUrl}" style="display:inline-block;background:#eab308;color:#000000;padding:14px 28px;font-size:14px;font-weight:bold;text-decoration:none;letter-spacing:1px;text-transform:uppercase;border-radius:4px;">CONFIRM ORDER</a>
+        </div>
+        
+        <h3 style="font-size:16px;margin:0 0 12px;color:#111;">Order Details</h3>
+        <table style="width:100%;border-collapse:collapse;margin-bottom:16px;">${rows}</table>
+
+        ${order.shipping_address ? `
+        <div style="margin-top:32px;border-top:1px solid #eee;padding-top:24px;">
+          <h3 style="font-size:16px;margin:0 0 12px;color:#111;">Shipping To</h3>
+          <p style="color:#555;font-size:14px;margin:0;line-height:1.5;">
+            ${escapeHtml(order.shipping_address.first_name || "")} ${escapeHtml(order.shipping_address.last_name || "")}<br>
+            ${escapeHtml(order.shipping_address.line1 || "")}<br>
+            ${order.shipping_address.line2 ? escapeHtml(order.shipping_address.line2) + "<br>" : ""}
+            ${escapeHtml(order.shipping_address.city || "")}, ${escapeHtml(order.shipping_address.state || "")} ${escapeHtml(order.shipping_address.postal_code || "")}
+          </p>
+          <p style="color:#555;font-size:14px;margin:12px 0 0;">
+            Phone: ${escapeHtml(order.shipping_address.phone || "")}
+          </p>
+        </div>
+        ` : ""}
+
       </div>
       <div style="background:#0a0a0a;color:#888;padding:24px 32px;font-size:12px;text-align:center;">
         <p style="margin:0 0 12px 0;">
@@ -184,11 +324,15 @@ type ShipOrderLike = OrderLike & {
 function itemList(items: ItemLike[]): string {
   const rows = (items || [])
     .map(
-      (it) =>
-        `<li style="padding:6px 0;border-bottom:1px solid #f2efe9;font-size:14px;">${esc(it.product_name)} — ${esc(it.size)}${it.color ? " / " + esc(it.color) : ""} <span style="color:#6f6f6f;">×${it.quantity ?? 1}</span></li>`,
+      (it) => {
+        const img = it.product_image
+          ? `<td style="width:60px;padding-right:16px;vertical-align:top;"><img src="${esc(it.product_image)}" alt="${esc(it.product_name)}" style="width:60px;height:80px;object-fit:cover;border-radius:4px;background:#f5f5f5;" /></td>`
+          : "";
+        return `<tr><td style="padding:16px 0;border-bottom:1px solid #f2efe9;"><table style="width:100%;border-collapse:collapse;"><tr>${img}<td style="vertical-align:top;font-size:14px;"><div style="font-weight:600;margin-bottom:4px;">${esc(it.product_name)}</div><div style="color:#6f6f6f;font-size:12px;">${esc(it.size)}${it.color ? " / " + esc(it.color) : ""}</div><div style="color:#6f6f6f;font-size:12px;margin-top:4px;">Qty: ${it.quantity ?? 1}</div></td></tr></table></td></tr>`;
+      }
     )
     .join("");
-  return `<ul style="list-style:none;padding:0;margin:0 0 8px;">${rows}</ul>`;
+  return `<table style="width:100%;border-collapse:collapse;margin:0 0 16px;">${rows}</table>`;
 }
 
 export function orderShippedHtml(
