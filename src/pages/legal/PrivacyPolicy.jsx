@@ -31,7 +31,7 @@ export default function PrivacyPolicy() {
         items={[
           "To process and deliver your orders accurately and securely.",
           "To send you transactional emails (order confirmations, shipping updates) via orders@pantherclaw.in.",
-          "To provide customer support and handle any returns or exchanges via support@pantherclaw.in.",
+          "To provide customer support and handle any exchanges via support@pantherclaw.in.",
           "To improve our website layout and customer experience (using consented analytics data).",
           "To send marketing communications, strictly if you have opted in (you may withdraw consent at any time)."
         ]}

@@ -26,7 +26,7 @@ const Account = lazy(() => import("./pages/Account"));
 const Contact = lazy(() => import("./pages/Contact"));
 const PrivacyPolicy = lazy(() => import("./pages/legal/PrivacyPolicy"));
 const TermsOfService = lazy(() => import("./pages/legal/TermsOfService"));
-const RefundPolicy = lazy(() => import("./pages/legal/RefundPolicy"));
+const ExchangePolicy = lazy(() => import("./pages/legal/ExchangePolicy"));
 const ShippingPolicy = lazy(() => import("./pages/legal/ShippingPolicy"));
 const TrackOrder = lazy(() => import("./pages/TrackOrder"));
 const NotFound = lazy(() => import("./pages/NotFound"));
@@ -95,7 +95,7 @@ export default function App() {
                       <Route path="/contact" element={<Contact />} />
                       <Route path="/privacy" element={<PrivacyPolicy />} />
                       <Route path="/terms" element={<TermsOfService />} />
-                      <Route path="/returns" element={<RefundPolicy />} />
+                      <Route path="/exchanges" element={<ExchangePolicy />} />
                       <Route
                         path="/shipping-policy"
                         element={<ShippingPolicy />}

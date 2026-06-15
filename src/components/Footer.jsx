@@ -97,7 +97,7 @@ export default function Footer() {
           title="Help"
           items={[
             { label: "Shipping", to: "/shipping-policy" },
-            { label: "Returns", to: "/returns" },
+            { label: "Exchanges", to: "/exchanges" },
             { label: "Contact", to: "/contact" },
             { label: "Track Order", to: "/track-order" },
           ]}
