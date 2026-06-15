@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { ArrowRight } from "lucide-react";
 import { FaInstagram, FaTwitter, FaYoutube } from "react-icons/fa";
 import { subscribeNewsletter } from "../lib/api";
+import { motion } from "framer-motion";
 
 export default function Footer() {
   const [email, setEmail] = useState("");
@@ -21,46 +22,59 @@ export default function Footer() {
   };
 
   return (
-    <footer className="bg-ink text-smoke" data-testid="footer">
-      {/* Newsletter */}
-      <div className="border-b border-white/10 px-4 py-20 sm:px-6 md:px-12">
-        <div className="mx-auto grid max-w-[1600px] gap-10 md:grid-cols-2 md:items-end">
-          <div>
-            <p className="label text-white/50">The Inner Circle</p>
-            <h2 className="display mt-4 text-5xl md:text-6xl">
-              Be first
-              <br />
-              to the drop.
-            </h2>
+    <footer className="bg-black text-white overflow-hidden" data-testid="footer">
+      {/* 1. Giant Scrolling Marquee */}
+      <div className="w-full overflow-hidden border-b border-white/10 bg-black py-4 md:py-8">
+        <motion.div
+          className="flex whitespace-nowrap"
+          animate={{ x: ["0%", "-50%"] }}
+          transition={{ repeat: Infinity, ease: "linear", duration: 15 }}
+        >
+          <div className="flex shrink-0">
+            {[...Array(6)].map((_, i) => (
+              <span key={`first-${i}`} className="display text-5xl md:text-8xl text-white px-8 italic tracking-tighter">
+                PANTHERCLAW
+              </span>
+            ))}
           </div>
-          <form
-            onSubmit={submit}
-            data-testid="newsletter-form"
-            className="w-full"
-          >
-            <div className="flex items-center border-b border-white/30 pb-3">
+          <div className="flex shrink-0">
+            {[...Array(6)].map((_, i) => (
+              <span key={`second-${i}`} className="display text-5xl md:text-8xl text-white px-8 italic tracking-tighter">
+                PANTHERCLAW
+              </span>
+            ))}
+          </div>
+        </motion.div>
+      </div>
+
+      {/* 2. Oversized Brutalist Newsletter */}
+      <div className="w-full px-4 py-24 sm:px-6 md:px-12 bg-black border-b border-white/10">
+        <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-start md:items-end gap-10">
+          <div className="max-w-md">
+            <span className="text-white/50 uppercase tracking-widest text-xs font-bold mb-4 block">Inner Circle</span>
+            <p className="text-white text-lg md:text-xl">Join the syndicate. Get early access to highly limited drops and prototype pieces.</p>
+          </div>
+          <form onSubmit={submit} className="w-full md:w-1/2" data-testid="newsletter-form">
+            <div className="flex items-center border-b-[3px] border-white/20 focus-within:border-white transition-colors pb-2">
               <input
                 type="email"
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="your@email.com"
+                placeholder="ENTER EMAIL."
+                className="w-full bg-transparent text-4xl md:text-6xl uppercase display text-white placeholder:text-white/20 focus:outline-none"
                 data-testid="newsletter-input"
-                className="w-full bg-transparent text-lg text-smoke placeholder:text-white/40 focus:outline-none"
               />
               <button
-                data-testid="newsletter-submit"
                 aria-label="Subscribe"
-                className="text-smoke"
+                className="text-white hover:translate-x-3 transition-transform"
+                data-testid="newsletter-submit"
               >
-                <ArrowRight size={24} />
+                <ArrowRight size={40} strokeWidth={1.5} />
               </button>
             </div>
             {msg && (
-              <p
-                className="mt-3 text-sm text-white/70"
-                data-testid="newsletter-msg"
-              >
+              <p className="mt-4 text-sm tracking-wider text-white/60 uppercase" data-testid="newsletter-msg">
                 {msg}
               </p>
             )}
@@ -68,15 +82,8 @@ export default function Footer() {
         </div>
       </div>
 
-      {/* Links */}
-      <div className="mx-auto grid max-w-[1600px] gap-10 px-4 py-16 sm:px-6 md:grid-cols-4 md:px-12">
-        <div className="md:col-span-1">
-          <span className="display text-2xl">PANTHERCLAW</span>
-          <p className="mt-4 max-w-xs text-sm text-white/50">
-            Premium baggy & wide-leg denim. Engineered in India for those who
-            move different.
-          </p>
-        </div>
+      {/* 3. Brutalist Link Grid */}
+      <div className="mx-auto grid max-w-7xl gap-y-12 gap-x-6 px-4 py-20 sm:px-6 md:grid-cols-4 md:px-12 bg-black">
         <FooterCol
           title="Shop"
           items={[
@@ -96,66 +103,35 @@ export default function Footer() {
           ]}
         />
         <FooterCol
-          title="Company"
+          title="Legal"
           items={[
-            { label: "Our Story", to: "/story" },
             { label: "Privacy Policy", to: "/privacy" },
             { label: "Terms of Service", to: "/terms" },
           ]}
         />
+        <div className="flex flex-col md:items-end justify-between">
+          <div className="flex gap-6 mb-8 md:mb-0">
+            <a href="https://instagram.com" target="_blank" rel="noreferrer" className="text-white hover:text-white/50 transition-colors">
+              <FaInstagram size={24} />
+            </a>
+            <a href="https://twitter.com" target="_blank" rel="noreferrer" className="text-white hover:text-white/50 transition-colors">
+              <FaTwitter size={24} />
+            </a>
+            <a href="https://youtube.com" target="_blank" rel="noreferrer" className="text-white hover:text-white/50 transition-colors">
+              <FaYoutube size={24} />
+            </a>
+          </div>
+          <p className="text-xs text-white/30 uppercase tracking-widest font-mono">
+            © {new Date().getFullYear()} PantherClaw
+          </p>
+        </div>
       </div>
 
-      <div className="mx-auto flex max-w-[1600px] flex-col items-center justify-between gap-4 border-t border-white/10 px-4 py-8 sm:px-6 md:flex-row md:px-12">
-        <p className="text-xs text-white/40">
-          © {new Date().getFullYear()} PantherClaw · pantherclaw.in
-        </p>
-        <div className="flex items-center gap-5">
-          <Link
-            to="/privacy"
-            className="text-xs text-white/40 hover:text-smoke transition-colors"
-          >
-            Privacy
-          </Link>
-          <Link
-            to="/terms"
-            className="text-xs text-white/40 hover:text-smoke transition-colors"
-          >
-            Terms
-          </Link>
-          <a
-            href="https://instagram.com"
-            target="_blank"
-            rel="noreferrer"
-            aria-label="Instagram"
-          >
-            <FaInstagram
-              size={18}
-              className="cursor-pointer text-white/60 transition-colors hover:text-smoke"
-            />
-          </a>
-          <a
-            href="https://twitter.com"
-            target="_blank"
-            rel="noreferrer"
-            aria-label="Twitter"
-          >
-            <FaTwitter
-              size={18}
-              className="cursor-pointer text-white/60 transition-colors hover:text-smoke"
-            />
-          </a>
-          <a
-            href="https://youtube.com"
-            target="_blank"
-            rel="noreferrer"
-            aria-label="YouTube"
-          >
-            <FaYoutube
-              size={18}
-              className="cursor-pointer text-white/60 transition-colors hover:text-smoke"
-            />
-          </a>
-        </div>
+      {/* 4. Giant Edge-to-Edge Logo */}
+      <div className="w-full flex justify-center items-end overflow-hidden pt-10 pointer-events-none select-none bg-black">
+        <span className="display text-[16vw] leading-[0.8] tracking-tighter text-white/5">
+          PANTHERCLAW
+        </span>
       </div>
     </footer>
   );
@@ -164,13 +140,13 @@ export default function Footer() {
 function FooterCol({ title, items }) {
   return (
     <div>
-      <p className="label text-white/50">{title}</p>
-      <ul className="mt-5 space-y-3">
+      <p className="uppercase tracking-widest text-xs font-bold text-white/40 mb-6">{title}</p>
+      <ul className="space-y-4">
         {items.map((i) => (
           <li key={i.label}>
             <Link
               to={i.to}
-              className="text-sm text-white/80 transition-colors hover:text-smoke"
+              className="text-lg md:text-xl text-white hover:text-white/50 transition-colors font-medium tracking-wide"
             >
               {i.label}
             </Link>
