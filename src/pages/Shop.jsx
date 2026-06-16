@@ -57,6 +57,34 @@ export default function Shop() {
   const canonical =
     baseUrl + "/shop" + (category ? "?category=" + category : "");
 
+  const breadcrumbLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Home",
+        "item": baseUrl
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "Shop",
+        "item": `${baseUrl}/shop`
+      }
+    ]
+  };
+  
+  if (category) {
+    breadcrumbLd.itemListElement.push({
+      "@type": "ListItem",
+      "position": 3,
+      "name": category,
+      "item": `${baseUrl}/shop?category=${encodeURIComponent(category)}`
+    });
+  }
+
   return (
     <div className="pt-32 px-4 sm:px-6 md:px-12 max-w-[1600px] mx-auto min-h-screen flex flex-col">
       <Helmet>
@@ -66,6 +94,7 @@ export default function Shop() {
           content={`Shop ${category ? category + " " : ""}premium baggy and wide-leg denim from Pantherclaw. Engineered in India for those who move different.`}
         />
         <link rel="canonical" href={canonical} />
+        <script type="application/ld+json">{JSON.stringify(breadcrumbLd)}</script>
       </Helmet>
 
       {/* Header and Filters Row */}

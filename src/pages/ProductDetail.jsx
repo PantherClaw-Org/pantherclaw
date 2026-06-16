@@ -377,6 +377,31 @@ export default function ProductDetail() {
         ? "https://schema.org/InStock"
         : "https://schema.org/OutOfStock",
       url: `${baseUrl}/product/${product.slug}`,
+      hasMerchantReturnPolicy: {
+        "@type": "MerchantReturnPolicy",
+        "applicableCountry": "IN",
+        "returnPolicyCategory": "https://schema.org/MerchantReturnFiniteReturnWindow",
+        "merchantReturnDays": "5",
+        "returnMethod": "https://schema.org/ReturnByMail",
+        "returnFees": "https://schema.org/FreeReturn"
+      },
+      shippingDetails: {
+        "@type": "OfferShippingDetails",
+        "shippingRate": {
+          "@type": "MonetaryAmount",
+          "value": "150",
+          "currency": "INR"
+        },
+        "shippingDestination": {
+          "@type": "DefinedRegion",
+          "addressCountry": "IN"
+        },
+        "deliveryTime": {
+          "@type": "ShippingDeliveryTime",
+          "handlingTime": { "@type": "QuantitativeValue", "minValue": 1, "maxValue": 2, "unitCode": "d" },
+          "transitTime": { "@type": "QuantitativeValue", "minValue": 2, "maxValue": 7, "unitCode": "d" }
+        }
+      }
     },
     ...(reviewAgg && reviewAgg.review_count > 0
       ? {
@@ -387,6 +412,19 @@ export default function ProductDetail() {
           },
         }
       : {}),
+  };
+
+  const categoryName = product.categories?.name || "Shop";
+  const categorySlug = product.categories?.slug || "";
+  const breadcrumbLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      { "@type": "ListItem", "position": 1, "name": "Home", "item": baseUrl },
+      { "@type": "ListItem", "position": 2, "name": "Shop", "item": `${baseUrl}/shop` },
+      { "@type": "ListItem", "position": 3, "name": categoryName, "item": `${baseUrl}/shop${categorySlug ? '?category=' + encodeURIComponent(categorySlug) : ''}` },
+      { "@type": "ListItem", "position": 4, "name": product.name, "item": `${baseUrl}/product/${product.slug}` }
+    ]
   };
 
   const refreshReviews = () => {
@@ -410,6 +448,7 @@ export default function ProductDetail() {
           href={`${baseUrl}/product/${product.slug}`}
         />
         <script type="application/ld+json">{JSON.stringify(productLd)}</script>
+        <script type="application/ld+json">{JSON.stringify(breadcrumbLd)}</script>
       </Helmet>
 
       {/* Product Top Section */}
@@ -427,7 +466,7 @@ export default function ProductDetail() {
                 >
                   <Img
                     src={shot.url}
-                    alt={shot.alt || product.name}
+                    alt={(shot.alt || product.name) + " — Premium Pantherclaw Denim"}
                     blurhash={shot.blurhash}
                     className="w-full h-auto"
                     sizes="100vw"
@@ -437,7 +476,7 @@ export default function ProductDetail() {
               ))
             ) : (
               <div className="w-[90vw] flex-shrink-0 snap-center bg-[#111]">
-                <Img src={displayImage} alt={product.name} className="w-full h-auto" sizes="100vw" eager />
+                <Img src={displayImage} alt={product.name + " — Premium Pantherclaw Denim"} className="w-full h-auto" sizes="100vw" eager />
               </div>
             )}
           </div>
@@ -453,7 +492,7 @@ export default function ProductDetail() {
                 >
                   <Img
                     src={shot.url}
-                    alt={shot.alt || product.name}
+                    alt={(shot.alt || product.name) + " — Premium Pantherclaw Denim"}
                     blurhash={shot.blurhash}
                     className="w-full h-auto"
                     sizes="50vw"
@@ -463,7 +502,7 @@ export default function ProductDetail() {
               ))
             ) : (
               <div className="w-full bg-[#111]">
-                <Img src={displayImage} alt={product.name} className="w-full h-auto" sizes="50vw" eager />
+                <Img src={displayImage} alt={product.name + " — Premium Pantherclaw Denim"} className="w-full h-auto" sizes="50vw" eager />
               </div>
             )}
           </div>

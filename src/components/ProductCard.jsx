@@ -69,8 +69,8 @@ export default function ProductCard({ product, index = 0 }) {
         }}
       >
         <Img
-          src={primary?.url}
-          alt={primary?.alt || product.name}
+          src={primary?.url || "/placeholder-denim.jpg"}
+          alt={(primary?.alt || product.name) + " — Premium Pantherclaw Denim"}
           blurhash={primary?.blurhash}
           sizes="(max-width: 768px) 50vw, 25vw"
           className={`h-full w-full ${shouldContain ? "object-contain" : "object-cover"}`}
