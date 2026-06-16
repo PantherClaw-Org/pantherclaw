@@ -75,6 +75,9 @@ export default function Home() {
               alt="Spring Drop"
               className="w-full h-full object-cover object-[center_30%]"
               fetchpriority="high"
+              decoding="sync"
+              width="1600"
+              height="1200"
             />
           </div>
           <div className="sticky bottom-0 z-10 w-full py-4 px-4 sm:px-6 md:px-8 flex items-center justify-between bg-black text-white border-b border-[#222]">

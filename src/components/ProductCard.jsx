@@ -74,6 +74,8 @@ export default function ProductCard({ product, index = 0 }) {
           blurhash={primary?.blurhash}
           sizes="(max-width: 768px) 50vw, 25vw"
           className={`h-full w-full ${shouldContain ? "object-contain" : "object-cover"}`}
+          width="600"
+          height="800"
         />
 
         <div className="absolute left-4 top-4 flex flex-col items-start gap-1.5">

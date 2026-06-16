@@ -22,7 +22,7 @@ export default function Footer() {
   };
 
   return (
-    <footer className="bg-black text-white overflow-hidden" data-testid="footer">
+    <footer className="bg-black text-white overflow-hidden [content-visibility:auto] [contain-intrinsic-size:auto_800px]" data-testid="footer">
       {/* 1. Giant Scrolling Marquee */}
       <div className="w-full overflow-hidden border-b border-white/10 bg-black py-4 md:py-8">
         <motion.div

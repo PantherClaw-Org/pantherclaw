@@ -17,12 +17,11 @@ export default function CookieBanner() {
 
   const injectAnalytics = () => {
     // 1. Google Analytics (GA4)
-    // Replace 'G-XXXXXXXXXX' with your actual Measurement ID
-    const gaId = "G-XXXXXXXXXX"; 
+    const gaId = "G-0HGH8ME6Y5"; 
     const gaScript1 = document.createElement("script");
     gaScript1.src = `https://www.googletagmanager.com/gtag/js?id=${gaId}`;
-    gaScript1.async = true;
-    document.head.appendChild(gaScript1);
+    gaScript1.defer = true;
+    document.body.appendChild(gaScript1);
 
     const gaScript2 = document.createElement("script");
     gaScript2.innerHTML = `
@@ -31,19 +30,20 @@ export default function CookieBanner() {
       gtag('js', new Date());
       gtag('config', '${gaId}');
     `;
-    document.head.appendChild(gaScript2);
+    document.body.appendChild(gaScript2);
 
     // 2. Microsoft Clarity
     const clarityId = "x7lko8ym19";
     const clarityScript = document.createElement("script");
+    clarityScript.defer = true;
     clarityScript.innerHTML = `
       (function(c,l,a,r,i,t,y){
           c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
-          t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+          t=l.createElement(r);t.defer=1;t.src="https://www.clarity.ms/tag/"+i;
           y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
       })(window, document, "clarity", "script", "${clarityId}");
     `;
-    document.head.appendChild(clarityScript);
+    document.body.appendChild(clarityScript);
   };
 
   const handleAccept = () => {

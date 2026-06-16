@@ -1,9 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!--
-  Static sitemap for PANTHERCLAW. Product detail URLs (/product/:slug) are
-  dynamic; generate and append them at build time from your products table
-  (see SETUP.md → "SEO"). Replace the domain if you launch on a different host.
--->
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://pantherclaw.in/</loc>
@@ -31,7 +26,7 @@
     <priority>0.3</priority>
   </url>
   <url>
-    <loc>https://pantherclaw.in/returns</loc>
+    <loc>https://pantherclaw.in/exchanges</loc>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
   </url>
@@ -44,5 +39,17 @@
     <loc>https://pantherclaw.in/terms</loc>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
+  </url>
+  <url>
+    <loc>https://pantherclaw.in/product/wide-leg-baggy-jeans</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <lastmod>2026-06-16</lastmod>
+  </url>
+  <url>
+    <loc>https://pantherclaw.in/product/relaxed-baggy-jeans</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <lastmod>2026-06-16</lastmod>
   </url>
 </urlset>

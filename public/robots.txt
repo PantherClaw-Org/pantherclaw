@@ -7,3 +7,13 @@ Disallow: /checkout
 Disallow: /checkout/success
 
 Sitemap: https://pantherclaw.in/sitemap.xml
+
+# Explicitly Allow AI & LLM Crawlers for Knowledge Graph inclusion
+User-agent: GPTBot
+Allow: /
+User-agent: ClaudeBot
+Allow: /
+User-agent: PerplexityBot
+Allow: /
+User-agent: Google-Extended
+Allow: /
