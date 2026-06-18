@@ -111,14 +111,8 @@ export default function Footer() {
         />
         <div className="flex flex-col md:items-end justify-between">
           <div className="flex gap-6 mb-8 md:mb-0">
-            <a href="https://instagram.com" target="_blank" rel="noreferrer" className="text-white hover:text-white/50 transition-colors">
+            <a href="https://www.instagram.com/pantherclawclothing/" target="_blank" rel="noreferrer" className="text-white hover:text-white/50 transition-colors">
               <FaInstagram size={24} />
-            </a>
-            <a href="https://twitter.com" target="_blank" rel="noreferrer" className="text-white hover:text-white/50 transition-colors">
-              <FaTwitter size={24} />
-            </a>
-            <a href="https://youtube.com" target="_blank" rel="noreferrer" className="text-white hover:text-white/50 transition-colors">
-              <FaYoutube size={24} />
             </a>
           </div>
           <p className="text-xs text-white/30 uppercase tracking-widest font-mono">
