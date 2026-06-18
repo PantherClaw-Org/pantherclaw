@@ -39,9 +39,13 @@ html.lenis body {
     background: #000000;
     color: var(--smoke);
     font-family: "Manrope", sans-serif;
-    overflow-x: hidden;
     scrollbar-width: thin;
     scrollbar-color: #fafafa #000000;
+  }
+
+  #root {
+    overflow-x: hidden;
+    min-height: 100vh;
   }
 
   ::selection {
