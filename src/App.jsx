@@ -40,8 +40,14 @@ function ReducedMotion() {
     const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
     const apply = () => (mq.matches ? lenis.stop() : lenis.start());
     apply();
-    mq.addEventListener("change", apply);
-    return () => mq.removeEventListener("change", apply);
+    
+    if (mq.addEventListener) {
+      mq.addEventListener("change", apply);
+      return () => mq.removeEventListener("change", apply);
+    } else if (mq.addListener) {
+      mq.addListener(apply);
+      return () => mq.removeListener(apply);
+    }
   }, [lenis]);
   return null;
 }

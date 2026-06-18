@@ -64,7 +64,7 @@ export default function CheckoutSuccess() {
             if (!clearedRef.current) {
               clearedRef.current = true;
               await clear();
-              localStorage.removeItem("checkout_address_id");
+              try { localStorage.removeItem("checkout_address_id"); } catch (e) {}
               try {
                 trackPurchase({
                   transactionId: ord.order_number || ord.id,
@@ -89,7 +89,7 @@ export default function CheckoutSuccess() {
             if (!clearedRef.current) {
               clearedRef.current = true;
               await clear();
-              localStorage.removeItem("checkout_address_id");
+              try { localStorage.removeItem("checkout_address_id"); } catch (e) {}
               // We do not fire trackPurchase until they confirm the COD order.
             }
             setStatus("action_required");

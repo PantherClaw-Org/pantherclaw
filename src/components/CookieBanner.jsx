@@ -7,7 +7,12 @@ export default function CookieBanner() {
 
   useEffect(() => {
     // Check if user has already given consent
-    const consent = localStorage.getItem("pantherclaw_cookie_consent");
+    let consent = null;
+    try {
+      consent = localStorage.getItem("pantherclaw_cookie_consent");
+    } catch (e) {
+      console.warn("localStorage is not available");
+    }
     if (!consent) {
       setShowBanner(true);
     } else if (consent === "accepted") {
@@ -47,13 +52,21 @@ export default function CookieBanner() {
   };
 
   const handleAccept = () => {
-    localStorage.setItem("pantherclaw_cookie_consent", "accepted");
+    try {
+      localStorage.setItem("pantherclaw_cookie_consent", "accepted");
+    } catch (e) {
+      console.warn("localStorage is not available");
+    }
     setShowBanner(false);
     injectAnalytics();
   };
 
   const handleDecline = () => {
-    localStorage.setItem("pantherclaw_cookie_consent", "declined");
+    try {
+      localStorage.setItem("pantherclaw_cookie_consent", "declined");
+    } catch (e) {
+      console.warn("localStorage is not available");
+    }
     setShowBanner(false);
   };
 
