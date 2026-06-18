@@ -9,6 +9,7 @@ export default defineConfig({
     host: true,
   },
   build: {
+    target: "es2015",
     outDir: "dist",
     sourcemap: false,
     chunkSizeWarningLimit: 1000,
